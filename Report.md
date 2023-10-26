@@ -8,9 +8,9 @@
 
 ---
 
-## 2. _due 10/25_ Project topic
+## 2. Project topic
 Performance comparison of sorting and graph algorithms with CUDA and MPI implementations
-## 3. _due 10/25_ Brief project description (what algorithms will you be comparing and on what architectures)
+## 3. Project description
 We will be implementing the following algorithms in MPI and CUDA:
 - Bitonic Sort
 - Odd-Even Transport Sort
