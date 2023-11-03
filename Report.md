@@ -14,7 +14,12 @@ Performance comparison of sorting and graph algorithms with CUDA and MPI impleme
 We will be implementing the following algorithms in MPI and CUDA:
 - Bitonic Sort
 - Odd-Even Transport Sort
-- Floyd-Warshall Algorithm
+- Merge sort
+- bubble sort
+- quick sort
+- radix sort
+- cascade merge sort
+- parallel external sort
 
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
