@@ -16,7 +16,7 @@ We will be implementing the following algorithms in MPI and CUDA:
 - Odd-Even Transport Sort
 - Merge sort
 - enumeration sort
-### Psuedo code for Merge Sort
+### Psuedo code for Merge Sort(CUDA)
 ```
 global function merge_sort_caller(values):
     allocate device memory for dev_values and temp
