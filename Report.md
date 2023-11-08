@@ -15,12 +15,7 @@ We will be implementing the following algorithms in MPI and CUDA:
 - Bitonic Sort
 - Odd-Even Transport Sort
 - Merge sort
-- bubble sort
-- quick sort
-- radix sort
-- cascade merge sort
-- parallel external sort
-
+- enumeration sort
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
 Instrument your code, and turn in at least one Caliper file per algorithm;
