@@ -16,9 +16,9 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include <caliper/cali.h>
-#include <caliper/cali-manager.h>
-#include <adiak.hpp>
+// #include <caliper/cali.h>
+// #include <caliper/cali-manager.h>
+// #include <adiak.hpp>
 
 #define MASTER 0               /* taskid of first task */
 #define FROM_MASTER 1          /* setting a message type */
@@ -26,10 +26,13 @@
 
 int THREADS;
 int NUM_VALS;
-
+float random_float()
+{
+  return (float)rand()/(float)RAND_MAX;
+}
 int main (int argc, char *argv[])
 {
-CALI_CXX_MARK_FUNCTION;
+// CALI_CXX_MARK_FUNCTION;
     
 NUM_VALS = atoi(argv[1]);
 
@@ -83,11 +86,11 @@ MPI_Comm_split(MPI_COMM_WORLD, is_master, taskid, &worker_comm);
 
 // WHOLE PROGRAM COMPUTATION PART STARTS HERE
 double total_time_start = MPI_Wtime();
-CALI_MARK_BEGIN(whole_computation);
+// CALI_MARK_BEGIN(whole_computation);
 
 // Create caliper ConfigManager object
-cali::ConfigManager mgr;
-mgr.start();
+// cali::ConfigManager mgr;
+// mgr.start();
 
 /**************************** master task ************************************/
    if (taskid == MASTER)
@@ -116,7 +119,7 @@ mgr.start();
 
             srand(time(NULL));
             int i;
-            for (i = 0; i < length; ++i) {
+            for (i = 0; i < NUM_VALS; ++i) {
                 h_array[i] = random_float();
             }
 
@@ -161,7 +164,7 @@ mgr.start();
       //SEND-RECEIVE PART FOR THE MASTER PROCESS ENDS HERE
       
       
-      
+        delete[] h_array;
       
       
    }
@@ -180,12 +183,12 @@ mgr.start();
       //CALCULATION PART FOR WORKER PROCESS STARTS HERE
 
         int count = 0;
-        for(int i = (taskid - 1); i < n; i += numworkers){
+        for(int i = (taskid - 1); i < NUM_VALS; i += numworkers){
             
-            if (i < n) {
+            if (i < NUM_VALS) {
                 rank[count] = 0;
                 rank_idx[count] = i;
-                for (int j = 0; j < n; j++) {
+                for (int j = 0; j < NUM_VALS; j++) {
                     if (received_data[j] < received_data[i] || (received_data[j] == received_data[i] && j < i)) {
                         rank[count]++;
                     }
@@ -311,12 +314,12 @@ mgr.start();
 
 
    if (taskid == MASTER){
-        delete[] h_array;
+      
    }
 
    // Flush Caliper output before finalizing MPI
-   mgr.stop();
-   mgr.flush();
+//    mgr.stop();
+//    mgr.flush();
 
    MPI_Finalize();
 }
