@@ -16,6 +16,53 @@ We will be implementing the following algorithms in MPI and CUDA:
 - Odd-Even Transport Sort
 - Merge sort
 - enumeration sort
+
+### Psuedo code for Bitonic Sort(CUDA)
+```
+global function bitonic_sort(values):
+    allocate device memory for dev_values
+    size = NUM_VALS * size_of(float)
+
+    cudaMalloc((void**) &dev_values, size)
+
+    // Memory copy from host to device
+    cudaMemcpy(dev_values, values, size, cudaMemcpyHostToDevice)
+
+    dim3 blocks(BLOCKS, 1)     // Number of blocks
+    dim3 threads(THREADS, 1)   // Number of threads
+
+    create CUDA events for timing
+
+    /* Major step */
+    for k from 2 to NUM_VALS (doubling each time):
+        /* Minor step */
+        for j from k / 2 to 1 (halving each time):
+            launch bitonic_sort_step CUDA kernel with arguments (dev_values, j, k) using blocks and threads
+            // Timing events for this iteration
+
+    // Memory copy from device to host
+    cudaMemcpy(values, dev_values, size, cudaMemcpyDeviceToHost)
+
+    // Free device memory
+    cudaFree(dev_values)
+
+global CUDA kernel function bitonic_sort_step(dev_values, j, k):
+    i = threadIdx.x + blockDim.x * blockIdx.x
+    ixj = i ^ j // Sorting partners
+
+    if ixj > i:
+        if (ixj) > i and (i & k) == 0:
+            // Sort ascending
+            if dev_values[i] > dev_values[ixj]:
+                swap dev_values[i] with dev_values[ixj]
+
+        if (ixj) > i and (i & k) != 0:
+            // Sort descending
+            if dev_values[i] < dev_values[ixj]:
+                swap dev_values[i] with dev_values[ixj]
+
+```
+
 ### Psuedo code for Merge Sort(CUDA)
 ```
 global function merge_sort_caller(values):
