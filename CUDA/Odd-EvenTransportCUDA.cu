@@ -10,7 +10,7 @@ int NUM_VALS;
 #define N 8
 
 // CUDA kernel function for odd-even transposition sort
-__global__ void oddEvenSortKernel(int *d_a, int n, int phase)
+__global__ void oddEvenSortKernel(float *d_a, int n, int phase)
 {
     int index = threadIdx.x + blockDim.x * blockIdx.x;
     int idx1 = index;
@@ -40,9 +40,9 @@ __global__ void oddEvenSortKernel(int *d_a, int n, int phase)
 }
 
 // Host function to run the odd-even transposition sort
-void cudaOddEvenSort(int *h_a, int n)
+void cudaOddEvenSort(float *h_a, int n)
 {
-    int *d_a;
+    float *d_a;
     // Allocate memory on the device
     cudaMalloc(&d_a, n * sizeof(int));
     // Copy data from host to device
@@ -83,7 +83,7 @@ void data_init(int *h_a, int n)
 }
 
 // Function to check the correctness of the sort
-int correctness_check(int *h_a, int n)
+int correctness_check(float *h_a, int n)
 {
     for (int i = 1; i < n; i++)
     {
@@ -95,16 +95,45 @@ int correctness_check(int *h_a, int n)
     return 1; // Array is sorted correctly
 }
 
+float random_float()
+{
+    return (float)rand() / (float)RAND_MAX;
+}
+
+void array_fill(float *arr, int length)
+{
+    srand(time(NULL));
+    int i;
+    for (i = 0; i < length; ++i)
+    {
+        arr[i] = random_float();
+    }
+}
+
+void array_print(float *arr, int length)
+{
+    int i;
+    for (i = 0; i < length; ++i)
+    {
+        printf("%1.3f ", arr[i]);
+    }
+    printf("\n");
+}
+
 int main()
 {
 
     int h_a[N];
+    float *values = (float *)malloc(5 * sizeof(float));
 
     CALI_MARK_BEGIN("main");
 
     // Initialize data in the host array
     CALI_MARK_BEGIN("data_init");
-    data_init(h_a, N);
+    // data_init(h_a, N);
+    array_fill(values, 5);
+    array_print(values, 5);
+
     CALI_MARK_END("data_init");
 
     // Caliper annotation for communication region, for example with MPI (not present in the code)
@@ -116,13 +145,13 @@ int main()
     CALI_MARK_BEGIN("comp");
     CALI_MARK_BEGIN("comp_large");
     // Perform sorting on the GPU
-    cudaOddEvenSort(h_a, N);
+    cudaOddEvenSort(values, 5);
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
 
     // Caliper annotation for checking the correctness of the sorting operation
     CALI_MARK_BEGIN("correctness_check");
-    int is_correct = correctness_check(h_a, N);
+    int is_correct = correctness_check(values, 5);
     CALI_MARK_END("correctness_check");
 
     if (is_correct)
@@ -135,6 +164,10 @@ int main()
     }
 
     CALI_MARK_END("main");
+
+    array_print(values, 5);
+
+    Thicket.tree();
 
     return 0;
 }
