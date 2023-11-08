@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
     if (rank == 0) {
         // Generate a random array of size n
-        std::srand(static_cast<unsigned int>(time(0));
+        std::srand(static_cast<unsigned int>(time(0)));
         std::vector<int> globalArray(n);
         for (int i = 0; i < n; i++) {
             globalArray[i] = std::rand() % 100;
