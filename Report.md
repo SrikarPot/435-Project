@@ -16,6 +16,34 @@ We will be implementing the following algorithms in MPI and CUDA:
 - Odd-Even Transport Sort
 - Merge sort
 - enumeration sort
+### Psuedo code for Merge Sort
+```
+global function merge_sort_caller(values):
+    allocate device memory for dev_values and temp
+    copy values from host to device (dev_values)
+    
+    blocks = number_of_blocks
+    threads = number_of_threads
+
+    for window from 2 to size of values (doubling each time):
+        launch merge_sort CUDA kernel with arguments (dev_values, temp, size of values, window) using blocks and threads
+
+    copy values from device to host (dev_values to values)
+    free device memory (dev_values, temp)
+
+global CUDA kernel function merge_sort(values, temp, num_vals, window):
+    id = threadIdx.x + blockDim.x * blockIdx.x
+    l = id * window
+    r = l + window
+
+    if r > num_vals:
+        r = num_vals
+
+    m = l + (r - l) / 2
+
+    if l < num_vals:
+        call merge function on the device (values, temp, l, m, r)
+```
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
 Instrument your code, and turn in at least one Caliper file per algorithm;
