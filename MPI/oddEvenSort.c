@@ -83,6 +83,32 @@ void Odd_even_iter(int local_A[], int temp_B[], int temp_C[],
     }
 } /* Odd_even_iter */
 
+float random_float()
+{
+    return (int)rand() / (int)RAND_MAX;
+}
+
+void array_fill(int *arr, int length)
+{
+    srand(time(NULL));
+    int i;
+    for (i = 0; i < length; ++i)
+    {
+        arr[i] = random_float();
+    }
+}
+
+void Print_local_lists(float local_A[], int local_n, int my_rank, int p, MPI_Comm comm)
+{
+    printf("Process %d's local list:\n", my_rank);
+    for (int i = 0; i < local_n; i++)
+    {
+        printf("%f ", local_A[i]);
+    }
+    printf("\n");
+    fflush(stdout); // Ensure the output is printed immediately
+}
+
 int main(int argc, char *argv[])
 {
     int my_rank, p; // rank, number processes
@@ -104,16 +130,8 @@ int main(int argc, char *argv[])
     // generate random list based on user input
     if (g_i == 'g')
     {
-        Generate_list(local_A, local_n, my_rank);
+        array_fill(local_A, local_n, my_rank);
         Print_local_lists(local_A, local_n, my_rank, p, comm);
-    }
-    // read in user defined list from command line
-    else
-    {
-        Read_list(local_A, local_n, my_rank, p, comm);
-        // #     ifdef DEBUG
-        Print_local_lists(local_A, local_n, my_rank, p, comm);
-        // #     endif
     }
 
 #ifdef DEBUG
