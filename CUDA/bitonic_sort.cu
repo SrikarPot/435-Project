@@ -194,22 +194,6 @@ int main(int argc, char *argv[])
   CALI_MARK_END("correctness_check");
 
   adiak::init(NULL);
-  adiak::user();
-  adiak::launchdate();
-  adiak::libraries();
-  adiak::cmdline();
-  adiak::clustername();
-  adiak::value("num_threads", THREADS);
-  adiak::value("num_blocks", BLOCKS);
-  adiak::value("num_vals", NUM_VALS);
-  adiak::value("program_name", "cuda_bitonic_sort");
-  adiak::value("datatype_size", sizeof(float));
-  adiak::value("effective_bandwidth (GB/s)", effective_bandwidth_gb_s);
-  adiak::value("bitonic_sort_step_time", bitonic_sort_step_time);
-  adiak::value("cudaMemcpy_host_to_device_time", cudaMemcpy_host_to_device_time);
-  adiak::value("cudaMemcpy_device_to_host_time", cudaMemcpy_device_to_host_time);
-
-  adiak::init(NULL);
   adiak::launchdate();    // launch date of the job
   adiak::libraries();     // Libraries used
   adiak::cmdline();       // Command line used to launch the job
