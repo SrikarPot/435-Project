@@ -84,19 +84,22 @@ __device__ void swap(int &a, int &b) {
 }
 
 // CUDA kernel for sorting the array based on ranks
-__global__ void sortArray(float *array, int *rank, int n, int THREADS) {
-    int k = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void sortArray(float *array, float *sorted_array, int *rank, int n, int THREADS) {
+    // int k = blockIdx.x * blockDim.x + threadIdx.x;
 
-    for(int i = k; i < n; i += THREADS){
-        if (i < n) {
-            for (int j = 0; j < n; j++) {
-                if (rank[j] == i) {
-                    swap(array[j], array[i]);
-                    swap(rank[j], rank[i]);
-                    break;
-                }
-            }
-        }
+    // for(int i = k; i < n; i += THREADS){
+    //     if (i < n) {
+    //         for (int j = 0; j < n; j++) {
+    //             if (rank[j] == i) {
+    //                 swap(array[j], array[i]);
+    //                 swap(rank[j], rank[i]);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+    for (int i = 0; i < n; i += THREADS){
+        sorted_array[rank[i]] = array[i];
     }
 }
 
@@ -105,22 +108,17 @@ int main(int argc, char *argv[])
 {
   
 
-  THREADS = atoi(argv[1]);
-  NUM_VALS = atoi(argv[2]);
-  BLOCKS = NUM_VALS / THREADS;
+    THREADS = atoi(argv[1]);
+    NUM_VALS = atoi(argv[2]);
+    BLOCKS = NUM_VALS / THREADS;
 
-  printf("Number of threads: %d\n", THREADS);
-  printf("Number of values: %d\n", NUM_VALS);
-  printf("Number of blocks: %d\n", BLOCKS);
+    printf("Number of threads: %d\n", THREADS);
+    printf("Number of values: %d\n", NUM_VALS);
+    printf("Number of blocks: %d\n", BLOCKS);
 
-  // Create caliper ConfigManager object
-  cali::ConfigManager mgr;
-  mgr.start();
-
-
-
-
-
+    // Create caliper ConfigManager object
+    cali::ConfigManager mgr;
+    mgr.start();
 
 
     const int n = NUM_VALS; // Size of the array
@@ -130,10 +128,7 @@ int main(int argc, char *argv[])
 
     // Initialize the array with random values
     array_fill(h_array, n);
-    // srand(static_cast<unsigned int>(time(nullptr)));
-    // for (int i = 0; i < n; i++) {
-    //     h_array[i] = rand() % 100;
-    // }
+    
 
     // Print the og array
     std::cout << "Original Array: ";
@@ -146,6 +141,7 @@ int main(int argc, char *argv[])
     int *d_array, *d_rank;
     cudaMalloc((void**)&d_array, sizeof(float) * n);
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
+    cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
 
     // Copy data from host to device
     cudaMemcpy(d_array, h_array, sizeof(float) * n, cudaMemcpyHostToDevice);
@@ -155,16 +151,17 @@ int main(int argc, char *argv[])
     cudaDeviceSynchronize();
 
     // Launch the sorting kernel to rearrange the array
-    // sortArray<<<BLOCKS, THREADS>>>(d_array, d_rank, n, THREADS);
-    // cudaDeviceSynchronize();
+    sortArray<<<BLOCKS, THREADS>>>(d_array, sorted_array_device, d_rank, n, THREADS);
+    cudaDeviceSynchronize();
 
     // Copy the sorted array and ranks back to the host
     cudaMemcpy(h_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_rank, d_rank, sizeof(int) * n, cudaMemcpyDeviceToHost);
+    cudaMemcpy(sorted_array, sorted_array_device, sizeof(float) * n, cudaMemcpyDeviceToHost);
 
-    for (int i = 0; i < NUM_VALS; i++){
-        sorted_array[rank[i]] = h_array[i];
-    }
+    // for (int i = 0; i < NUM_VALS; i++){
+    //     sorted_array[rank[i]] = h_array[i];
+    // }
 
     // Print the sorted array
     std::cout << "Sorted Array: ";
@@ -179,6 +176,7 @@ int main(int argc, char *argv[])
     delete[] sorted_array;
     cudaFree(d_array);
     cudaFree(d_rank);
+    cudaFree(sorted_array_device);
 
 
 
