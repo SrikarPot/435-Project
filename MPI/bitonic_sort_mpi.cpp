@@ -37,24 +37,19 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
-    int n = std::atoi(argv[1]);
-    int processors = numProcs;
+    int n, processors;
+    n = atoi(argv[1]);
+    processors = numProcs;
+
 
     // Broadcast user input to all processes
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&processors, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    // Ensure the number of processors and number of values is a power of 2
+    // Ensure the number of processors is a power of 2
     if (processors != 1 && (processors & (processors - 1)) != 0) {
         if (rank == 0) {
             std::cerr << "Number of processors must be a power of 2." << std::endl;
-        }
-        MPI_Finalize();
-        return 1;
-    }
-    if (n != 1 && (n & (n - 1)) != 0) {
-        if (rank == 0) {
-            std::cerr << "Number of values must be a power of 2." << std::endl;
         }
         MPI_Finalize();
         return 1;
@@ -79,12 +74,6 @@ int main(int argc, char** argv) {
         for (int i = 0; i < n; i++) {
             globalArray[i] = std::rand() % 100;
         }
-        // Print the initial array
-        for (int i = 0; i < n; i++) {
-            std::cout << globalArray[i] << " ";
-        }
-        std::cout << std::endl;
-
 
         // Scatter the global array to local arrays
         MPI_Scatter(globalArray.data(), elementsPerProc, MPI_INT, localArray.data(), elementsPerProc, MPI_INT, 0, MPI_COMM_WORLD);
@@ -99,7 +88,7 @@ int main(int argc, char** argv) {
     // Perform parallel Bitonic Merge
     for (int step = 2; step <= processors; step *= 2) {
         for (int subStep = step / 2; subStep > 0; subStep /= 2) {
-            for (int i = 0; i < elementsPerProc; i += subStep) {
+            for (int i = rank % (step / 2) == 0 ? 0 : elementsPerProc; i < elementsPerProc; i += subStep) {
                 bitonicMerge(localArray, i, subStep, (i / (elementsPerProc / step)) % 2);
             }
         }
