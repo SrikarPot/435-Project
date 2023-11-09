@@ -102,7 +102,11 @@ void cudaOddEvenSort(float *h_a, int n)
   // CALI_MARK_END("comp");
 
   // Copy the sorted array back to the host
+  CALI_MARK_BEGIN("comm");
+  CALI_MARK_BEGIN("comm_large");
   cudaMemcpy(h_a, d_a, n * sizeof(int), cudaMemcpyDeviceToHost);
+  CALI_MARK_END("comm_large");
+  CALI_MARK_END("comm");
   // Free device memory
   cudaFree(d_a);
 }
