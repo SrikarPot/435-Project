@@ -1,5 +1,6 @@
 /home/aurkorouth/435-Project/MPI/CMakeFiles/mergesort.dir
 /home/aurkorouth/435-Project/MPI/CMakeFiles/enumeration.dir
 /home/aurkorouth/435-Project/MPI/CMakeFiles/bitonic.dir
+/home/aurkorouth/435-Project/MPI/CMakeFiles/oddeven.dir
 /home/aurkorouth/435-Project/MPI/CMakeFiles/edit_cache.dir
 /home/aurkorouth/435-Project/MPI/CMakeFiles/rebuild_cache.dir
