@@ -111,6 +111,7 @@ void merge_sort_caller(float *values)
 
 int main(int argc, char *argv[])
 {
+  CALI_MARK_BEGIN("main");
   THREADS = atoi(argv[1]);
   NUM_VALS = atoi(argv[2]);
   BLOCKS = NUM_VALS / THREADS;
@@ -123,9 +124,10 @@ int main(int argc, char *argv[])
   mgr.start();
 
   clock_t start, stop;
-
+  CALI_MARK_BEGIN("data_init");
   float *values = (float*) malloc( NUM_VALS * sizeof(float));
   array_fill(values, NUM_VALS);
+  CALI_MARK_END("data_init");
 
   start = clock();
   merge_sort_caller(values); /* Inplace */
@@ -157,6 +159,7 @@ int main(int argc, char *argv[])
 //   adiak::value("bitonic_sort_step_time", bitonic_sort_step_time);
 //   adiak::value("cudaMemcpy_host_to_device_time", cudaMemcpy_host_to_device_time);
 //   adiak::value("cudaMemcpy_device_to_host_time", cudaMemcpy_device_to_host_time);
+  CALI_MARK_END("main");
 
   // Flush Caliper output before finalizing MPI
   mgr.stop();
