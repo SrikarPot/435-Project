@@ -46,20 +46,20 @@ global function bitonic_sort(values):
     // Free device memory
     cudaFree(dev_values)
 
-global CUDA kernel function bitonic_sort_step(dev_values, j, k):
-    i = threadIdx.x + blockDim.x * blockIdx.x
-    ixj = i ^ j // Sorting partners
+    global CUDA kernel function bitonic_sort_step(dev_values, j, k):
+        i = threadIdx.x + blockDim.x * blockIdx.x
+        ixj = i ^ j // Sorting partners
 
-    if ixj > i:
-        if (ixj) > i and (i & k) == 0:
-            // Sort ascending
-            if dev_values[i] > dev_values[ixj]:
-                swap dev_values[i] with dev_values[ixj]
-
-        if (ixj) > i and (i & k) != 0:
-            // Sort descending
-            if dev_values[i] < dev_values[ixj]:
-                swap dev_values[i] with dev_values[ixj]
+        if ixj > i:
+            if (ixj) > i and (i & k) == 0:
+                // Sort ascending
+                if dev_values[i] > dev_values[ixj]:
+                    swap dev_values[i] with dev_values[ixj]
+    
+            if (ixj) > i and (i & k) != 0:
+                // Sort descending
+                if dev_values[i] < dev_values[ixj]:
+                    swap dev_values[i] with dev_values[ixj]
 
 ```
 
