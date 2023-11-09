@@ -2,6 +2,133 @@
 #include <stdlib.h>
 #include <mpi.h>
 
+// Helper function to get command line arguments
+void Get_args(int argc, char *argv[], int *global_n, int *local_n, char *g_i, int my_rank, int p, MPI_Comm comm)
+{
+    if (my_rank == 0)
+    {
+        if (argc != 3)
+        {
+            fprintf(stderr, "Usage: mpiexec -np <p> %s <g|i> <global_n>\n", argv[0]);
+            *global_n = -1; // Use an invalid value to indicate error
+        }
+        else
+        {
+            *g_i = argv[1][0]; // Expecting 'g' or 'i'
+            *global_n = atoi(argv[2]);
+
+            // Check for a valid 'g_i' and positive 'global_n'
+            if ((*g_i != 'g' && *g_i != 'i') || *global_n <= 0)
+            {
+                fprintf(stderr, "Error: invalid arguments\n");
+                *global_n = -1; // Use an invalid value to indicate error
+            }
+        }
+    }
+
+    // Broadcast global_n and g_i to all processes
+    MPI_Bcast(global_n, 1, MPI_INT, 0, comm);
+    MPI_Bcast(g_i, 1, MPI_CHAR, 0, comm);
+
+    if (*global_n <= 0)
+    {
+        MPI_Finalize();
+        exit(-1);
+    }
+
+    // Compute the local number of elements
+    *local_n = *global_n / p;
+
+    // Handle the case where global_n is not divisible by p
+    if (*global_n % p != 0)
+    {
+        if (my_rank == 0)
+        {
+            fprintf(stderr, "Error: The number of elements must be divisible by the number of processes.\n");
+        }
+        MPI_Finalize();
+        exit(-1);
+    }
+}
+
+// Helper function to generate a list of integers
+void Generate_list(int *local_A, int local_n, int my_rank)
+{
+    // Seed the random number generator to get different results each run
+    srand(time(NULL) + my_rank);
+    for (int i = 0; i < local_n; i++)
+    {
+        local_A[i] = rand() % 100; // Fill the array with random numbers from 0 to 99
+    }
+}
+
+// Helper function to read in a user-defined list
+void Read_list(int *local_A, int local_n, int my_rank, int p, MPI_Comm comm)
+{
+    // You should implement this to read the user's list from command line or file.
+    // This is a placeholder implementation
+    for (int i = 0; i < local_n; i++)
+    {
+        local_A[i] = my_rank + i; // Simple pattern for demonstration
+    }
+}
+
+// Helper function to print a process's local list
+void Print_local_lists(const int *local_A, int local_n, int my_rank, int p, MPI_Comm comm)
+{
+    for (int i = 0; i < p; i++)
+    {
+        if (my_rank == i)
+        {
+            printf("Process %d's local list: ", my_rank);
+            for (int j = 0; j < local_n; j++)
+            {
+                printf("%d ", local_A[j]);
+            }
+            printf("\n");
+        }
+        MPI_Barrier(comm); // Synchronize before the next process prints
+    }
+}
+
+// Helper function to sort local list
+void Sort(int *local_A, int local_n, int my_rank, int p, MPI_Comm comm)
+{
+    // Implement your preferred sorting algorithm here
+    // Placeholder: Use qsort for demonstration
+    qsort(local_A, local_n, sizeof(int), compare);
+}
+
+// Comparison function for qsort
+int compare(const void *a, const void *b)
+{
+    return (*(int *)a - *(int *)b);
+}
+
+// Helper function to print the global list
+void Print_global_list(int *local_A, int local_n, int my_rank, int p, MPI_Comm comm)
+{
+    // This will require gathering the sorted local lists to the root process
+    // and then printing the entire sorted list
+    int *global_A = NULL;
+    if (my_rank == 0)
+    {
+        global_A = (int *)malloc(p * local_n * sizeof(int));
+    }
+    MPI_Gather(local_A, local_n, MPI_INT, global_A, local_n, MPI_INT, 0, comm);
+
+    if (my_rank == 0)
+    {
+        printf("Global list: ");
+        for (int i = 0; i < p * local_n; i++)
+        {
+            printf("%d ", global_A[i]);
+        }
+        printf("\n");
+        free(global_A);
+    }
+}
+
 void Sort(int local_A[], int local_n, int my_rank,
           int p, MPI_Comm comm)
 {
@@ -47,9 +174,7 @@ void Sort(int local_A[], int local_n, int my_rank,
     free(temp_C);
 } /* Sort */
 
-void Odd_even_iter(int local_A[], int temp_B[], int temp_C[],
-                   int local_n, int phase, int even_partner, int odd_partner,
-                   int my_rank, int p, MPI_Comm comm)
+void Odd_even_iter(int local_A[], int temp_B[], int temp_C[], int local_n, int phase, int even_partner, int odd_partner, int my_rank, int p, MPI_Comm comm)
 {
     MPI_Status status;
 
