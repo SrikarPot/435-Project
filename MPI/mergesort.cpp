@@ -1,6 +1,14 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <mpi.h>
+#include <stdio.h>
+#include <time.h>
+#include <iostream>
+
+#include <caliper/cali.h>
+#include <caliper/cali-manager.h>
+#include <adiak.hpp>
+
+#include <cuda_runtime.h>
+#include <cuda.h>
 
 void merge(int arr[], int left, int mid, int right) {
     int n1 = mid - left + 1;
@@ -50,6 +58,7 @@ void merge_sort(int arr[], int left, int right) {
 }
 
 int main(int argc, char *argv[]) {
+    
     int rank, size;
     int array_size;
 
