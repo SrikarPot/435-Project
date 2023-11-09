@@ -92,6 +92,7 @@ mergesort_EXTERNAL_OBJECTS =
 
 mergesort: CMakeFiles/mergesort.dir/mergesort.cpp.o
 mergesort: CMakeFiles/mergesort.dir/build.make
+mergesort: /usr/local/lib/libcaliper.so.2.11.0-dev
 mergesort: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so
 mergesort: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so
 mergesort: CMakeFiles/mergesort.dir/link.txt
