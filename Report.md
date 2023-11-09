@@ -63,6 +63,39 @@ global CUDA kernel function bitonic_sort_step(dev_values, j, k):
 
 ```
 
+### Psuedo Code for Odd-Even Transposition Sort (CUDA)
+```
+Define oddEvenSortKernel with input array d_a, size n, and phase:
+  Calculate index based on thread and block indices
+  Define idx1 as index
+  Define idx2 as index + 1
+
+  // Odd and even phases
+  If phase is even and idx2 is less than n and idx1 is even:
+    If d_a[idx1] is greater than d_a[idx2]:
+      Swap d_a[idx1] with d_a[idx2]
+  
+  Else if phase is odd and idx2 is less than n and idx1 is odd:
+    If d_a[idx1] is greater than d_a[idx2]:
+      Swap d_a[idx1] with d_a[idx2]
+
+Define cudaOddEvenSort with input array h_a and size n:
+  Allocate memory for array d_a on the device
+
+  Copy array h_a to device memory (d_a)
+
+  Define number of blocks and threads per block
+
+  For i from 0 to n-1:
+    Call oddEvenSortKernel with d_a, n, and i
+    Synchronize device to ensure kernel completion
+    Optionally, copy d_a to h_a to check intermediate sorting state
+    Print array h_a to display sorting progress (optional step)
+
+  Copy the sorted array d_a back to host array h_a
+
+  Free the device memory allocated for d_a
+
 ### Psuedo code for Merge Sort(CUDA)
 ```
 global function merge_sort_caller(values):
@@ -90,6 +123,7 @@ global CUDA kernel function merge_sort(values, temp, num_vals, window):
 
     if l < num_vals:
         call merge function on the device (values, temp, l, m, r)
+```
 ```
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
