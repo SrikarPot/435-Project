@@ -129,6 +129,80 @@ mergesort/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mergesort.dir/build.make CMakeFiles/mergesort.dir/build
 .PHONY : mergesort/fast
 
+#=============================================================================
+# Target rules for targets named enumeration
+
+# Build rule for target.
+enumeration: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 enumeration
+.PHONY : enumeration
+
+# fast build rule for target.
+enumeration/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/enumeration.dir/build.make CMakeFiles/enumeration.dir/build
+.PHONY : enumeration/fast
+
+#=============================================================================
+# Target rules for targets named bitonic
+
+# Build rule for target.
+bitonic: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 bitonic
+.PHONY : bitonic
+
+# fast build rule for target.
+bitonic/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bitonic.dir/build.make CMakeFiles/bitonic.dir/build
+.PHONY : bitonic/fast
+
+bitonic.o: bitonic.cpp.o
+.PHONY : bitonic.o
+
+# target to build an object file
+bitonic.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bitonic.dir/build.make CMakeFiles/bitonic.dir/bitonic.cpp.o
+.PHONY : bitonic.cpp.o
+
+bitonic.i: bitonic.cpp.i
+.PHONY : bitonic.i
+
+# target to preprocess a source file
+bitonic.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bitonic.dir/build.make CMakeFiles/bitonic.dir/bitonic.cpp.i
+.PHONY : bitonic.cpp.i
+
+bitonic.s: bitonic.cpp.s
+.PHONY : bitonic.s
+
+# target to generate assembly for a file
+bitonic.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bitonic.dir/build.make CMakeFiles/bitonic.dir/bitonic.cpp.s
+.PHONY : bitonic.cpp.s
+
+enumeration.o: enumeration.cpp.o
+.PHONY : enumeration.o
+
+# target to build an object file
+enumeration.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/enumeration.dir/build.make CMakeFiles/enumeration.dir/enumeration.cpp.o
+.PHONY : enumeration.cpp.o
+
+enumeration.i: enumeration.cpp.i
+.PHONY : enumeration.i
+
+# target to preprocess a source file
+enumeration.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/enumeration.dir/build.make CMakeFiles/enumeration.dir/enumeration.cpp.i
+.PHONY : enumeration.cpp.i
+
+enumeration.s: enumeration.cpp.s
+.PHONY : enumeration.s
+
+# target to generate assembly for a file
+enumeration.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/enumeration.dir/build.make CMakeFiles/enumeration.dir/enumeration.cpp.s
+.PHONY : enumeration.cpp.s
+
 mergesort.o: mergesort.cpp.o
 .PHONY : mergesort.o
 
@@ -161,7 +235,15 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... bitonic"
+	@echo "... enumeration"
 	@echo "... mergesort"
+	@echo "... bitonic.o"
+	@echo "... bitonic.i"
+	@echo "... bitonic.s"
+	@echo "... enumeration.o"
+	@echo "... enumeration.i"
+	@echo "... enumeration.s"
 	@echo "... mergesort.o"
 	@echo "... mergesort.i"
 	@echo "... mergesort.s"
