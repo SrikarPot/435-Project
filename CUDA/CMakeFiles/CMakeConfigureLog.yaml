@@ -2535,3 +2535,74 @@ events:
         
       exitCode: 0
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/share/cmake-3.27/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/share/cmake-3.27/Modules/FindMPI.cmake:1322 (_MPI_try_staged_settings)"
+      - "/home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/share/cmake-3.27/Modules/FindMPI.cmake:1645 (_MPI_check_lang_works)"
+      - "CMakeLists.txt:5 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-CVCOl2"
+      binary: "/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-CVCOl2"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-CVCOl2'
+        
+        Run Build Command(s): /home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_a4e0b/fast
+        make[1]: Entering directory '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-CVCOl2'
+        /usr/bin/make  -f CMakeFiles/cmTC_a4e0b.dir/build.make CMakeFiles/cmTC_a4e0b.dir/build
+        make[2]: Entering directory '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-CVCOl2'
+        Building CXX object CMakeFiles/cmTC_a4e0b.dir/test_mpi.cpp.o
+        /usr/bin/c++  -isystem /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -isystem /usr/lib/x86_64-linux-gnu/openmpi/include -pthread -o CMakeFiles/cmTC_a4e0b.dir/test_mpi.cpp.o -c /home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-CVCOl2/test_mpi.cpp
+        Linking CXX executable cmTC_a4e0b
+        /home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a4e0b.dir/link.txt --verbose=1
+        /usr/bin/c++ -pthread CMakeFiles/cmTC_a4e0b.dir/test_mpi.cpp.o -o cmTC_a4e0b  -Wl,-rpath,/usr/lib/x86_64-linux-gnu/openmpi/lib /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so 
+        make[2]: Leaving directory '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-CVCOl2'
+        make[1]: Leaving directory '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-CVCOl2'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/share/cmake-3.27/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/share/cmake-3.27/Modules/FindMPI.cmake:1672 (_MPI_try_staged_settings)"
+      - "CMakeLists.txt:5 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode MPICXX"
+    directories:
+      source: "/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-uBdbk3"
+      binary: "/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-uBdbk3"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
+      cached: true
+      stdout: |
+        Change Dir: '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-uBdbk3'
+        
+        Run Build Command(s): /home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_2763f/fast
+        make[1]: Entering directory '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-uBdbk3'
+        /usr/bin/make  -f CMakeFiles/cmTC_2763f.dir/build.make CMakeFiles/cmTC_2763f.dir/build
+        make[2]: Entering directory '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-uBdbk3'
+        Building CXX object CMakeFiles/cmTC_2763f.dir/test_mpi.cpp.o
+        /usr/bin/c++  -isystem /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -isystem /usr/lib/x86_64-linux-gnu/openmpi/include -pthread -o CMakeFiles/cmTC_2763f.dir/test_mpi.cpp.o -c /home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-uBdbk3/test_mpi.cpp
+        Linking CXX executable cmTC_2763f
+        /home/aurkorouth/research/spack/opt/spack/linux-ubuntu20.04-icelake/gcc-9.4.0/cmake-3.27.4-fsub5zsbtum27p7qbbe54lqssydw6m4k/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2763f.dir/link.txt --verbose=1
+        /usr/bin/c++ -pthread CMakeFiles/cmTC_2763f.dir/test_mpi.cpp.o -o cmTC_2763f  -Wl,-rpath,/usr/lib/x86_64-linux-gnu/openmpi/lib /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so 
+        make[2]: Leaving directory '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-uBdbk3'
+        make[1]: Leaving directory '/home/aurkorouth/435-Project/CUDA/CMakeFiles/CMakeScratch/TryCompile-uBdbk3'
+        
+      exitCode: 0
+...
