@@ -63,6 +63,11 @@ global CUDA kernel function bitonic_sort_step(dev_values, j, k):
 
 ```
 
+### Psuedo code for Odd-Even Tranport(CUDA)
+```
+
+```
+
 ### Psuedo code for Merge Sort(CUDA)
 ```
 global function merge_sort_caller(values):
@@ -91,6 +96,7 @@ global CUDA kernel function merge_sort(values, temp, num_vals, window):
     if l < num_vals:
         call merge function on the device (values, temp, l, m, r)
 ```
+
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
 Instrument your code, and turn in at least one Caliper file per algorithm;
