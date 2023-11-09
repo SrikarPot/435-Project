@@ -38,9 +38,12 @@ int main(int argc, char** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
     int n, processors;
-    n = atoi(argv[1]);
-    processors = numProcs;
-
+    if (rank == 0) {
+        std::cout << "Enter the size of the array: ";
+        std::cin >> n;
+        std::cout << "Enter the number of processors: ";
+        std::cin >> processors;
+    }
 
     // Broadcast user input to all processes
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -69,7 +72,7 @@ int main(int argc, char** argv) {
 
     if (rank == 0) {
         // Generate a random array of size n
-        std::srand(static_cast<unsigned int>(time(0)));
+        std::srand(static_cast<unsigned int>(time(0));
         std::vector<int> globalArray(n);
         for (int i = 0; i < n; i++) {
             globalArray[i] = std::rand() % 100;
@@ -88,7 +91,7 @@ int main(int argc, char** argv) {
     // Perform parallel Bitonic Merge
     for (int step = 2; step <= processors; step *= 2) {
         for (int subStep = step / 2; subStep > 0; subStep /= 2) {
-            for (int i = rank % (step / 2) == 0 ? 0 : elementsPerProc; i < elementsPerProc; i += subStep) {
+            for (int i = 0; i < elementsPerProc; i += subStep) {
                 bitonicMerge(localArray, i, subStep, (i / (elementsPerProc / step)) % 2);
             }
         }
