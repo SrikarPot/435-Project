@@ -77,7 +77,7 @@ int calculations_per_worker = NUM_VALS / numworkers;
 int rank[calculations_per_worker];
 int rank_idx[calculations_per_worker];
 float received_data[NUM_VALS];
-float all_ranks[NUM_VALS];
+float sorted_array[NUM_VALS];
 
 int is_master =(taskid == 0) ? 1 : 0;
 
@@ -110,12 +110,6 @@ double total_time_start = MPI_Wtime();
             float *h_array = new float[n];
             // float *h_rank = new float[n];
             
-
-            // Initialize the array with random values
-            // srand(static_cast<unsigned int>(time(nullptr)));
-            // for (int i = 0; i < n; i++) {
-            //     h_array[i] = rand() % 100;
-            // }
 
             srand(time(NULL));
             int i;
@@ -155,14 +149,18 @@ double total_time_start = MPI_Wtime();
             MPI_Recv(&rank_idx, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
 
             for (int i = 0; i < calculations_per_worker; i++){
-                all_ranks[rank_idx[i]] = rank[i];
+                sorted_array[rank[i]] = h_array[rank_idx];
             }
 
             printf("Received results from task %d\n",source);
         }
       
       //SEND-RECEIVE PART FOR THE MASTER PROCESS ENDS HERE
-      
+        std::cout << "Sorted Array: ";
+        for (int i = 0; i < n; i++) {
+            std::cout << sorted_array[i] << " ";
+        }
+        std::cout << std::endl;
       
         delete[] h_array;
       
@@ -313,9 +311,7 @@ double total_time_start = MPI_Wtime();
         //    }
 
 
-   if (taskid == MASTER){
-      
-   }
+
 
    // Flush Caliper output before finalizing MPI
 //    mgr.stop();
