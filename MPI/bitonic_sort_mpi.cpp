@@ -2,112 +2,129 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <algorithm>
 #include <mpi.h>
 
-void exchange(std::vector<int>& data, int n, int m, int rank, int size, MPI_Comm comm) {
-    int partnerRank = rank ^ (1 << m);
-    if (rank < partnerRank) {
-        std::vector<int> recvData(n);
-        MPI_Recv(recvData.data(), n, MPI_INT, partnerRank, 0, comm, MPI_STATUS_IGNORE);
-
-        if (rank & (1 << m)) {
-            std::vector<int> mergedData(n);
-            int i = 0, j = 0;
-            for (int k = 0; k < n; k++) {
-                if (i < n / 2 && (j == n / 2 || recvData[i] < data[j])) {
-                    mergedData[k] = recvData[i];
-                    i++;
-                } else {
-                    mergedData[k] = data[j];
-                    j++;
-                }
-            }
-            data = mergedData;
-        } else {
-            std::vector<int> mergedData(n);
-            int i = n - 1, j = n - 1;
-            for (int k = n - 1; k >= 0; k--) {
-                if (i >= n / 2 && (j < n / 2 || data[i] > recvData[j])) {
-                    mergedData[k] = data[i];
-                    i--;
-                } else {
-                    mergedData[k] = recvData[j];
-                    j--;
-                }
-            }
-            data = mergedData;
-        }
-    } else {
-        MPI_Send(data.data(), n, MPI_INT, partnerRank, 0, comm);
+void compareExchange(std::vector<int>& arr, int i, int j, int dir) {
+    if ((arr[i] > arr[j]) == dir) {
+        std::swap(arr[i], arr[j]);
     }
 }
 
-void bitonicSortParallel(std::vector<int>& data, int rank, int size, MPI_Comm comm) {
-    int n = data.size();
-    for (int m = 1; m <= size; m <<= 1) {
-        for (int j = m >> 1; j > 0; j >>= 1) {
-            for (int i = 0; i < n; i++) {
-                int bit = (i & j) >> (m - 2);
-                if ((i & (m - 1)) == 0 && (i | (j - 1)) < n) {
-                    if (bit == rank) {
-                        exchange(data, n, m, rank, size, comm);
-                    }
-                }
-            }
+void bitonicMerge(std::vector<int>& arr, int start, int length, int dir) {
+    if (length > 1) {
+        int k = length / 2;
+        for (int i = start; i < start + k; ++i) {
+            compareExchange(arr, i, i + k, dir);
         }
+        bitonicMerge(arr, start, k, dir);
+        bitonicMerge(arr, start + k, k, dir);
+    }
+}
+
+void bitonicSort(std::vector<int>& arr, int start, int length, int dir) {
+    if (length > 1) {
+        int k = length / 2;
+        bitonicSort(arr, start, k, 1);
+        bitonicSort(arr, start + k, k, 0);
+        bitonicMerge(arr, start, length, dir);
     }
 }
 
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
-
-    int size, rank;
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int rank, numProcs;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
-    if (argc != 3) {
+    int n = std::atoi(argv[1]);
+    int processors = numProcs;
+
+    // Broadcast user input to all processes
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&processors, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Ensure the number of processors and number of values is a power of 2
+    if (processors != 1 && (processors & (processors - 1)) != 0) {
         if (rank == 0) {
-            std::cerr << "Usage: " << argv[0] << " <num_elements> <num_processors>" << std::endl;
+            std::cerr << "Number of processors must be a power of 2." << std::endl;
+        }
+        MPI_Finalize();
+        return 1;
+    }
+    if (n != 1 && (n & (n - 1)) != 0) {
+        if (rank == 0) {
+            std::cerr << "Number of values must be a power of 2." << std::endl;
         }
         MPI_Finalize();
         return 1;
     }
 
-    int numElements = std::atoi(argv[1]);
-    int numProcessors = std::atoi(argv[2]);
-
-    if (numProcessors != size) {
+    // Ensure the number of elements is a multiple of the number of processors
+    int elementsPerProc = n / processors;
+    if (n % processors != 0) {
         if (rank == 0) {
-            std::cerr << "Number of processors must match MPI communicator size." << std::endl;
+            std::cerr << "Number of elements must be a multiple of the number of processors." << std::endl;
         }
         MPI_Finalize();
         return 1;
     }
 
-    // Generate random data on rank 0 and distribute it to all processors
-    std::vector<int> data;
+    std::vector<int> localArray(elementsPerProc);
+
     if (rank == 0) {
-        data.resize(numElements);
-        for (int i = 0; i < numElements; i++) {
-            data[i] = rand() % 1000;
+        // Generate a random array of size n
+        std::srand(static_cast<unsigned int>(time(0)));
+        std::vector<int> globalArray(n);
+        for (int i = 0; i < n; i++) {
+            globalArray[i] = std::rand() % 100;
         }
-    }
-    MPI_Bcast(data.data(), numElements, MPI_INT, 0, MPI_COMM_WORLD);
-
-    // Perform parallel bitonic sort
-    bitonicSortParallel(data, rank, size, MPI_COMM_WORLD);
-
-    // Gather sorted data on rank 0
-    std::vector<int> sortedData(numElements);
-    MPI_Gather(data.data(), numElements, MPI_INT, sortedData.data(), numElements, MPI_INT, 0, MPI_COMM_WORLD);
-
-    // Output sorted data on rank 0
-    if (rank == 0) {
-        std::cout << "Sorted Data: ";
-        for (int i = 0; i < numElements; i++) {
-            std::cout << sortedData[i] << " ";
+        // Print the initial array
+        for (int i = 0; i < n; i++) {
+            std::cout << globalArray[i] << " ";
         }
         std::cout << std::endl;
+
+
+        // Scatter the global array to local arrays
+        MPI_Scatter(globalArray.data(), elementsPerProc, MPI_INT, localArray.data(), elementsPerProc, MPI_INT, 0, MPI_COMM_WORLD);
+    } else {
+        // Receive local array from root process
+        MPI_Scatter(nullptr, 0, MPI_INT, localArray.data(), elementsPerProc, MPI_INT, 0, MPI_COMM_WORLD);
+    }
+
+    // Sort local array using Bitonic Sort
+    bitonicSort(localArray, 0, elementsPerProc, 1);
+
+    // Perform parallel Bitonic Merge
+    for (int step = 2; step <= processors; step *= 2) {
+        for (int subStep = step / 2; subStep > 0; subStep /= 2) {
+            for (int i = 0; i < elementsPerProc; i += subStep) {
+                bitonicMerge(localArray, i, subStep, (i / (elementsPerProc / step)) % 2);
+            }
+        }
+    }
+
+    // Gather the sorted local arrays back to the global array
+    if (rank == 0) {
+        std::vector<int> sortedArray(n);
+        MPI_Gather(localArray.data(), elementsPerProc, MPI_INT, sortedArray.data(), elementsPerProc, MPI_INT, 0, MPI_COMM_WORLD);
+
+        // Merge the sorted subarrays to get the final sorted array
+        for (int step = processors / 2; step > 0; step /= 2) {
+            for (int i = 0; i < n; i += elementsPerProc) {
+                bitonicMerge(sortedArray, i, elementsPerProc, (i / (n / step)) % 2);
+            }
+        }
+
+        // Print the final sorted array
+        for (int i = 0; i < n; i++) {
+            std::cout << sortedArray[i] << " ";
+        }
+        std::cout << std::endl;
+    } else {
+        // Send local sorted array to the root process
+        MPI_Gather(localArray.data(), elementsPerProc, MPI_INT, nullptr, 0, MPI_INT, 0, MPI_COMM_WORLD);
     }
 
     MPI_Finalize();
