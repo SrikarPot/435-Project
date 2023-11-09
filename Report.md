@@ -95,7 +95,7 @@ Define cudaOddEvenSort with input array h_a and size n:
   Copy the sorted array d_a back to host array h_a
 
   Free the device memory allocated for d_a
-
+```
 ### Psuedo code for Merge Sort(CUDA)
 ```
 global function merge_sort_caller(values):
@@ -123,7 +123,6 @@ global CUDA kernel function merge_sort(values, temp, num_vals, window):
 
     if l < num_vals:
         call merge function on the device (values, temp, l, m, r)
-```
 ```
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
