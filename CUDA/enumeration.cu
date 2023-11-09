@@ -60,7 +60,7 @@ void array_fill(float *arr, int length)
   }
 }
 
-__global__ void enumerationSort(int *array, int *rank, int n, int THREADS) {
+__global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
 
     for(int i = k; i < n; i += THREADS){
@@ -84,7 +84,7 @@ __device__ void swap(int &a, int &b) {
 }
 
 // CUDA kernel for sorting the array based on ranks
-__global__ void sortArray(int *array, int *rank, int n, int THREADS) {
+__global__ void sortArray(float *array, int *rank, int n, int THREADS) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
 
     for(int i = k; i < n; i += THREADS){
@@ -124,15 +124,16 @@ int main(int argc, char *argv[])
 
 
     const int n = NUM_VALS; // Size of the array
-    int *h_array = new int[n];
+    float *h_array = new float[n];
     int *h_rank = new int[n];
-    int *sorted_array = new int[n];
+    float *sorted_array = new float[n];
 
     // Initialize the array with random values
-    srand(static_cast<unsigned int>(time(nullptr)));
-    for (int i = 0; i < n; i++) {
-        h_array[i] = rand() % 100;
-    }
+    array_fill(h_array, n);
+    // srand(static_cast<unsigned int>(time(nullptr)));
+    // for (int i = 0; i < n; i++) {
+    //     h_array[i] = rand() % 100;
+    // }
 
     // Print the og array
     std::cout << "Original Array: ";
@@ -143,11 +144,11 @@ int main(int argc, char *argv[])
 
     // Device arrays
     int *d_array, *d_rank;
-    cudaMalloc((void**)&d_array, sizeof(int) * n);
+    cudaMalloc((void**)&d_array, sizeof(float) * n);
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
 
     // Copy data from host to device
-    cudaMemcpy(d_array, h_array, sizeof(int) * n, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_array, h_array, sizeof(float) * n, cudaMemcpyHostToDevice);
 
     // Launch the enumeration sort kernel
     enumerationSort<<<BLOCKS, THREADS>>>(d_array, d_rank, n, THREADS);
@@ -158,11 +159,11 @@ int main(int argc, char *argv[])
     // cudaDeviceSynchronize();
 
     // Copy the sorted array and ranks back to the host
-    cudaMemcpy(h_array, d_array, sizeof(int) * n, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_rank, d_rank, sizeof(int) * n, cudaMemcpyDeviceToHost);
 
     for (int i = 0; i < NUM_VALS; i++){
-        sorted_array[h_rank[i]] = h_array[i];
+        sorted_array[rank[i]] = h_array[i];
     }
 
     // Print the sorted array
