@@ -1,0 +1,6 @@
+{
+    "cmake.sourceDirectory": "/home/aurkorouth/435-Project/CUDA",
+    "files.associations": {
+        "type_traits": "cpp"
+    }
+}
