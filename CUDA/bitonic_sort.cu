@@ -17,6 +17,7 @@
 
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include "../helper.h"
 
 int THREADS;
 int BLOCKS;
@@ -173,7 +174,9 @@ int main(int argc, char *argv[])
   clock_t start, stop;
 
   float *values = (float*) malloc( NUM_VALS * sizeof(float));
+  CALI_MARK_BEGIN("data_init");
   array_fill(values, NUM_VALS);
+  CALI_MARK_END("data_init");
 
   start = clock();
   bitonic_sort(values); /* Inplace */
@@ -186,6 +189,9 @@ int main(int argc, char *argv[])
   std::cout << "device to host time: " << cudaMemcpy_device_to_host_time << std::endl;
   std::cout << "effective bandwidth: " << effective_bandwidth_gb_s << std::endl;
 
+  CALI_MARK_BEGIN("correctness_check");
+  correctness_check(values, NUM_VALS);
+  CALI_MARK_END("correctness_check");
 
   adiak::init(NULL);
   adiak::user();
