@@ -1,3 +1,0 @@
-/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/rebuild_cache.dir
-/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/merge.dir
-/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/edit_cache.dir
