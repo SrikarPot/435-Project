@@ -34,4 +34,16 @@ void array_fill(float *arr, int length)
   }
 }
 
+int correctness_check(float *h_a, int n)
+{
+    for (int i = 1; i < n; i++)
+    {
+        if (h_a[i - 1] > h_a[i])
+        {
+            return 0; // Array is not sorted correctly
+        }
+    }
+    return 1; // Array is sorted correctly
+}
+
 #endif  // End of header guard HELPER_H
