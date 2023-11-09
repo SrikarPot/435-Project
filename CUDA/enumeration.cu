@@ -25,9 +25,10 @@ const char* cudaMemcpy_host_to_device = "cudaMemcpy_host_to_device";
 const char* cudaMemcpy_device_to_host = "cudaMemcpy_device_to_host";
 
 /* Define Caliper region names */
-const char* host_to_device = "host_to_device";
-const char* device_to_host = "device_to_host";
-const char* bitonic_step = "bitonic_step";
+const char* comm = "comm";
+const char* comm_large = "comm_large";
+const char* comp = "comp";
+const char* comp_large = "comp_large";
 
 int bitonic_counter = 0;
 
@@ -85,19 +86,6 @@ __device__ void swap(int &a, int &b) {
 
 // CUDA kernel for sorting the array based on ranks
 __global__ void sortArray(float *array, float *sorted_array, int *rank, int n, int THREADS) {
-    // int k = blockIdx.x * blockDim.x + threadIdx.x;
-
-    // for(int i = k; i < n; i += THREADS){
-    //     if (i < n) {
-    //         for (int j = 0; j < n; j++) {
-    //             if (rank[j] == i) {
-    //                 swap(array[j], array[i]);
-    //                 swap(rank[j], rank[i]);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
     for (int i = 0; i < n; i += THREADS){
         sorted_array[rank[i]] = array[i];
     }
@@ -143,21 +131,47 @@ int main(int argc, char *argv[])
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
     cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
 
+    CALI_MARK_BEGIN("comm");
+    CALI_MARK_BEGIN("comm_large");
+
     // Copy data from host to device
     cudaMemcpy(d_array, h_array, sizeof(float) * n, cudaMemcpyHostToDevice);
+
+    CALI_MARK_BEGIN("comm_large");
+    CALI_MARK_BEGIN("comm");
+
+    CALI_MARK_BEGIN("comp");
+    CALI_MARK_BEGIN("comp_large");
 
     // Launch the enumeration sort kernel
     enumerationSort<<<BLOCKS, THREADS>>>(d_array, d_rank, n, THREADS);
     cudaDeviceSynchronize();
+    CALI_MARK_END("comp_large");
 
+    CALI_MARK_BEGIN("comp_large");
     // Launch the sorting kernel to rearrange the array
     sortArray<<<BLOCKS, THREADS>>>(d_array, sorted_array_device, d_rank, n, THREADS);
     cudaDeviceSynchronize();
 
+    CALI_MARK_END("comp_large");
+    CALI_MARK_END("comp");
+
+    CALI_MARK_BEGIN("comm");
+    
     // Copy the sorted array and ranks back to the host
-    cudaMemcpy(h_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
-    cudaMemcpy(h_rank, d_rank, sizeof(int) * n, cudaMemcpyDeviceToHost);
+    // CALI_MARK_BEGIN("comm_large");
+    // cudaMemcpy(h_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    // CALI_MARK_END("comm_large");
+
+    // CALI_MARK_BEGIN("comm_large");
+    // cudaMemcpy(h_rank, d_rank, sizeof(int) * n, cudaMemcpyDeviceToHost);
+    // CALI_MARK_END("comm_large");
+
+    CALI_MARK_BEGIN("comm_large");
     cudaMemcpy(sorted_array, sorted_array_device, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    CALI_MARK_END("comm_large");
+
+    CALI_MARK_END("comm");
 
     // for (int i = 0; i < NUM_VALS; i++){
     //     sorted_array[rank[i]] = h_array[i];
@@ -187,48 +201,20 @@ int main(int argc, char *argv[])
     adiak::clustername();   // Name of the cluster
     adiak::value("Algorithm", "EnumerationSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
     adiak::value("ProgrammingModel", "CUDA"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
-    adiak::value("Datatype", "int"); // The datatype of input elements (e.g., double, int, float)
-    adiak::value("SizeOfDatatype", "sizeOfDatatype"); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
-    adiak::value("InputSize", "inputSize"); // The number of elements in input dataset (1000)
-    adiak::value("InputType", "inputType"); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
-    adiak::value("num_procs", "num_procs"); // The number of processors (MPI ranks)
+    adiak::value("Datatype", float); // The datatype of input elements (e.g., double, int, float)
+    adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
+    adiak::value("InputType", "Sorted"); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    // adiak::value("num_procs", ); // The number of processors (MPI ranks)
     adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
     adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
-    adiak::value("group_num", "group_number"); // The number of your group (integer, e.g., 1, 10)
-    adiak::value("implementation_source", "Online"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
-
-
-
-
+    adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("implementation_source", "Handwritten"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
 
 
 //   print_elapsed(start, stop);
 
-  // Store results in these variables.
-
-  
-//   printf("\neffective_bandwidth_gb_s: %.7f\n", effective_bandwidth_gb_s);
-//   printf("bitonic_sort_step_time: %.7f\n", bitonic_sort_step_time);
-//   printf("cudaMemcpy_host_to_device_time: %.7f\n", cudaMemcpy_host_to_device_time);
-//   printf("cudaMemcpy_device_to_host_time: %.7f\n", cudaMemcpy_device_to_host_time);
-//   printf("\ntotal time: %.7f\n", (ms_bitonic_step + ms_host_to_device + ms_device_to_host));
-
-//   adiak::init(NULL);
-//   adiak::user();
-//   adiak::launchdate();
-//   adiak::libraries();
-//   adiak::cmdline();
-//   adiak::clustername();
-//   adiak::value("num_threads", THREADS);
-//   adiak::value("num_blocks", BLOCKS);
-//   adiak::value("num_vals", NUM_VALS);
-//   adiak::value("program_name", "cuda_bitonic_sort");
-//   adiak::value("datatype_size", sizeof(float));
-//   adiak::value("effective_bandwidth (GB/s)", effective_bandwidth_gb_s);
-//   adiak::value("bitonic_sort_step_time", bitonic_sort_step_time);
-//   adiak::value("cudaMemcpy_host_to_device_time", cudaMemcpy_host_to_device_time);
-//   adiak::value("cudaMemcpy_device_to_host_time", cudaMemcpy_device_to_host_time);
 
   // Flush Caliper output before finalizing MPI
   mgr.stop();
