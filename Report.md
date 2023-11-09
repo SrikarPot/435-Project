@@ -124,6 +124,29 @@ global CUDA kernel function merge_sort(values, temp, num_vals, window):
     if l < num_vals:
         call merge function on the device (values, temp, l, m, r)
 ```
+### Psuedo code for Enumeration Sort(CUDA)
+```
+
+begin
+    initialize rank_array, sorted_array
+
+   for each process do
+        divide indexes in array to processes so processes work on indices which are their number + number of workers (loop).
+            loop through array and compare current index to all other values
+                Increment index of current value in the same index of rank array if (A[i] < A[j]) or A[i] = A[j] and i < j).
+                else do not increment
+
+    synchronize
+		
+   for each process do
+        divide indexes in array to processes so processes work on indices which are their number + number of workers (loop).
+
+            sorted_array[rank[working idx]] = array[working idx];
+			
+   
+		
+end ENUM_SORTING
+```
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
 Instrument your code, and turn in at least one Caliper file per algorithm;
