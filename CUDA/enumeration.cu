@@ -85,7 +85,7 @@ __device__ void swap(int &a, int &b) {
 
 // CUDA kernel for sorting the array based on ranks
 __global__ void sortArray(float *array, float *sorted_array, int *rank, int n, int THREADS) {
-    // int k = blockIdx.x * blockDim.x + threadIdx.x;
+    int k = blockIdx.x * blockDim.x + threadIdx.x;
 
     // for(int i = k; i < n; i += THREADS){
     //     if (i < n) {
@@ -98,7 +98,7 @@ __global__ void sortArray(float *array, float *sorted_array, int *rank, int n, i
     //         }
     //     }
     // }
-    for (int i = 0; i < n; i += THREADS){
+    for (int i = k; i < n; i += THREADS){
         sorted_array[rank[i]] = array[i];
     }
 }
@@ -138,7 +138,8 @@ int main(int argc, char *argv[])
     std::cout << std::endl;
 
     // Device arrays
-    int *d_array, *d_rank;
+    float *d_array, *sorted_array_device;
+    int* d_rank;
     cudaMalloc((void**)&d_array, sizeof(float) * n);
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
     cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
