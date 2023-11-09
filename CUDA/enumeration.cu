@@ -86,20 +86,8 @@ __device__ void swap(int &a, int &b) {
 
 // CUDA kernel for sorting the array based on ranks
 __global__ void sortArray(float *array, float *sorted_array, int *rank, int n, int THREADS) {
-    for (int i = 0; i < n; i += THREADS){
     int k = blockIdx.x * blockDim.x + threadIdx.x;
 
-    // for(int i = k; i < n; i += THREADS){
-    //     if (i < n) {
-    //         for (int j = 0; j < n; j++) {
-    //             if (rank[j] == i) {
-    //                 swap(array[j], array[i]);
-    //                 swap(rank[j], rank[i]);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
     for (int i = k; i < n; i += THREADS){
         sorted_array[rank[i]] = array[i];
     }
