@@ -77,7 +77,7 @@ int calculations_per_worker = NUM_VALS / numworkers;
 int rank[calculations_per_worker];
 int rank_idx[calculations_per_worker];
 float received_data[NUM_VALS];
-float all_ranks[NUM_VALS];
+float sorted_array[NUM_VALS];
 
 int is_master =(taskid == 0) ? 1 : 0;
 
@@ -155,7 +155,7 @@ double total_time_start = MPI_Wtime();
             MPI_Recv(&rank_idx, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
 
             for (int i = 0; i < calculations_per_worker; i++){
-                all_ranks[rank_idx[i]] = rank[i];
+                sorted_array[rank_idx[i]] = h_array[rank[i]];
             }
 
             printf("Received results from task %d\n",source);
@@ -163,7 +163,15 @@ double total_time_start = MPI_Wtime();
       
       //SEND-RECEIVE PART FOR THE MASTER PROCESS ENDS HERE
       
-      
+      //   if (taskid <= NUM_VALS)
+      //         for (int j = 0; j < n; j++) {
+      //             if (rank[j] == i) {
+      //                 swap(array[j], array[i]);
+      //                 swap(rank[j], rank[i]);
+      //                 break;
+      //             }
+      //         }
+      // }
         delete[] h_array;
       
       
