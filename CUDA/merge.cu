@@ -89,23 +89,28 @@ void merge_sort_caller(float *values)
 {
   float *dev_values, *temp;
   int size = NUM_VALS * sizeof(float);
-
+  CALI_MARK_BEGIN("comm");
+  CALI_MARK_BEGIN("comm_large");
   cudaMalloc((void**)&dev_values, size);
   cudaMalloc((void**)&temp, size);
   cudaMemcpy(dev_values, values, size, cudaMemcpyHostToDevice);
-
-
+  CALI_MARK_END("comm_large");
+  CALI_MARK_END("comm");
   
   dim3 blocks(BLOCKS,1);    /* Number of blocks   */
   dim3 threads(THREADS,1);  /* Number of threads  */
-
+  CALI_MARK_BEGIN("comp");
   for(int window = 2; window <= size; window <<=1) {
     merge_sort<<<blocks, threads>>>(dev_values, temp, NUM_VALS, window);
   }
-
+  CALI_MARK_END("comp");
+  CALI_MARK_BEGIN("comm");
+  CALI_MARK_BEGIN("comm_large");
   cudaMemcpy(values, dev_values, size, cudaMemcpyDeviceToHost);
   cudaFree(dev_values);
   cudaFree(temp);
+  CALI_MARK_END("comm_large");
+  CALI_MARK_END("comm");
   
 }
 
