@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
   adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
   adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
   adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
-  adiak::value("implementation_source", "Handwritten"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
+  adiak::value("implementation_source", "Lab 3"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
   // Flush Caliper output before finalizing MPI
   mgr.stop();
