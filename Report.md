@@ -147,6 +147,9 @@ begin
 		
 end ENUM_SORTING
 ```
+### Considerations
+We have gotten correct implementations for CUDA uploaded to the github, along with their corresponding caliper files. We were running into issues with testing MPI algorithms, so for now we only have the "rough draft" version of these uploaded to our github. We plan on thouroughly testing these and making appropiate psuedo code. In addition, we are struggling to formulate a valid MPI implementation for many of the algorithms, so we plan to sort those issues out.
+
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
 Instrument your code, and turn in at least one Caliper file per algorithm;
