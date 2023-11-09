@@ -35,9 +35,9 @@ target_include_directories(bitonic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../)  # Ad
 target_link_libraries(bitonic PRIVATE MPI::MPI_CXX)
 target_link_libraries(bitonic PRIVATE caliper)
 
-# # Add an executable for oddeven.cpp
-# add_executable(oddeven oddeven.cpp)
-# target_include_directories(oddeven PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../)  # Adjust as per your project structure
+# Add an executable for oddeven.cpp
+add_executable(oddeven oddeven.cpp)
+target_include_directories(oddeven PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../)  # Adjust as per your project structure
 
-# target_link_libraries(oddeven PRIVATE MPI::MPI_CXX)
-# target_link_libraries(oddeven PRIVATE caliper)
+target_link_libraries(oddeven PRIVATE MPI::MPI_CXX)
+target_link_libraries(oddeven PRIVATE caliper)

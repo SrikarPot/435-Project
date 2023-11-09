@@ -149,7 +149,7 @@ double total_time_start = MPI_Wtime();
             MPI_Recv(&rank_idx, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
 
             for (int i = 0; i < calculations_per_worker; i++){
-                sorted_array[rank[i]] = h_array[rank_idx];
+                // sorted_array[rank[i]] = h_array[rank_idx];
             }
 
             printf("Received results from task %d\n",source);

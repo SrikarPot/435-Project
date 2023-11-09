@@ -155,6 +155,19 @@ bitonic/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bitonic.dir/build.make CMakeFiles/bitonic.dir/build
 .PHONY : bitonic/fast
 
+#=============================================================================
+# Target rules for targets named oddeven
+
+# Build rule for target.
+oddeven: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 oddeven
+.PHONY : oddeven
+
+# fast build rule for target.
+oddeven/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/build
+.PHONY : oddeven/fast
+
 bitonic.o: bitonic.cpp.o
 .PHONY : bitonic.o
 
@@ -227,6 +240,30 @@ mergesort.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mergesort.dir/build.make CMakeFiles/mergesort.dir/mergesort.cpp.s
 .PHONY : mergesort.cpp.s
 
+oddeven.o: oddeven.cpp.o
+.PHONY : oddeven.o
+
+# target to build an object file
+oddeven.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/oddeven.cpp.o
+.PHONY : oddeven.cpp.o
+
+oddeven.i: oddeven.cpp.i
+.PHONY : oddeven.i
+
+# target to preprocess a source file
+oddeven.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/oddeven.cpp.i
+.PHONY : oddeven.cpp.i
+
+oddeven.s: oddeven.cpp.s
+.PHONY : oddeven.s
+
+# target to generate assembly for a file
+oddeven.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/oddeven.cpp.s
+.PHONY : oddeven.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -238,6 +275,7 @@ help:
 	@echo "... bitonic"
 	@echo "... enumeration"
 	@echo "... mergesort"
+	@echo "... oddeven"
 	@echo "... bitonic.o"
 	@echo "... bitonic.i"
 	@echo "... bitonic.s"
@@ -247,6 +285,9 @@ help:
 	@echo "... mergesort.o"
 	@echo "... mergesort.i"
 	@echo "... mergesort.s"
+	@echo "... oddeven.o"
+	@echo "... oddeven.i"
+	@echo "... oddeven.s"
 .PHONY : help
 
 

@@ -66,6 +66,7 @@ CMAKE_BINARY_DIR = /home/aurkorouth/435-Project/MPI
 all: CMakeFiles/mergesort.dir/all
 all: CMakeFiles/enumeration.dir/all
 all: CMakeFiles/bitonic.dir/all
+all: CMakeFiles/oddeven.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -76,6 +77,7 @@ preinstall:
 clean: CMakeFiles/mergesort.dir/clean
 clean: CMakeFiles/enumeration.dir/clean
 clean: CMakeFiles/bitonic.dir/clean
+clean: CMakeFiles/oddeven.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -155,6 +157,32 @@ bitonic: CMakeFiles/bitonic.dir/rule
 CMakeFiles/bitonic.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bitonic.dir/build.make CMakeFiles/bitonic.dir/clean
 .PHONY : CMakeFiles/bitonic.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/oddeven.dir
+
+# All Build rule for target.
+CMakeFiles/oddeven.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/aurkorouth/435-Project/MPI/CMakeFiles --progress-num=7,8 "Built target oddeven"
+.PHONY : CMakeFiles/oddeven.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/oddeven.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/aurkorouth/435-Project/MPI/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/oddeven.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/aurkorouth/435-Project/MPI/CMakeFiles 0
+.PHONY : CMakeFiles/oddeven.dir/rule
+
+# Convenience name for target.
+oddeven: CMakeFiles/oddeven.dir/rule
+.PHONY : oddeven
+
+# clean rule for target.
+CMakeFiles/oddeven.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/clean
+.PHONY : CMakeFiles/oddeven.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.
