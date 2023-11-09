@@ -1,6 +1,15 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 #include <caliper/cali.h>
+#include <time.h>
+#include <iostream>
+
+#include <caliper/cali.h>
+#include <caliper/cali-manager.h>
+#include <adiak.hpp>
+
+#include <cuda_runtime.h>
+#include <cuda.h>
 
 int THREADS;
 int BLOCKS;
@@ -8,6 +17,14 @@ int NUM_VALS;
 
 // Define the array size
 #define N 8
+
+cudaEvent_t start_sort, end_sort, start_host_device, end_host_device, start_device_host, end_device_host;
+
+void print_elapsed(clock_t start, clock_t stop)
+{
+    double elapsed = ((double)(stop - start)) / CLOCKS_PER_SEC;
+    printf("Elapsed time: %.3fs\n", elapsed);
+}
 
 // CUDA kernel function for odd-even transposition sort
 __global__ void oddEvenSortKernel(float *d_a, int n, int phase)
@@ -141,13 +158,22 @@ int main()
 
     CALI_MARK_END("comm");
 
+    cali::ConfigManager mgr;
+    mgr.start();
+
+    clock_t start, stop;
+
     // Caliper instrumentation for computation region
     CALI_MARK_BEGIN("comp");
     CALI_MARK_BEGIN("comp_large");
+    start = clock();
     // Perform sorting on the GPU
     cudaOddEvenSort(values, 5);
+    stop = clock();
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
+
+    print_elapsed(start, stop);
 
     // Caliper annotation for checking the correctness of the sorting operation
     CALI_MARK_BEGIN("correctness_check");
@@ -167,7 +193,24 @@ int main()
 
     array_print(values, 5);
 
-    Thicket.tree();
+    adiak::init(NULL);
+    adiak::user();
+    adiak::launchdate();
+    adiak::libraries();
+    adiak::cmdline();
+    adiak::clustername();
+    adiak::value("num_threads", THREADS);
+    adiak::value("num_blocks", BLOCKS);
+    adiak::value("num_vals", NUM_VALS);
+    adiak::value("program_name", "cuda_odd-even_transposition");
+    adiak::value("datatype_size", sizeof(float));
+    adiak::value("effective_bandwidth (GB/s)", effective_bandwidth_gb_s);
+    adiak::value("odd_even_transposition_sort_step_time", odd_even_transposition_sort_step_time);
+    adiak::value("cudaMemcpy_host_to_device_time", cudaMemcpy_host_to_device_time);
+    adiak::value("cudaMemcpy_device_to_host_time", cudaMemcpy_device_to_host_time);
+
+    mgr.stop();
+    mgr.flush();
 
     return 0;
 }
