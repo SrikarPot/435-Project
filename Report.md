@@ -46,23 +46,56 @@ global function bitonic_sort(values):
     // Free device memory
     cudaFree(dev_values)
 
-global CUDA kernel function bitonic_sort_step(dev_values, j, k):
-    i = threadIdx.x + blockDim.x * blockIdx.x
-    ixj = i ^ j // Sorting partners
+    global CUDA kernel function bitonic_sort_step(dev_values, j, k):
+        i = threadIdx.x + blockDim.x * blockIdx.x
+        ixj = i ^ j // Sorting partners
 
-    if ixj > i:
-        if (ixj) > i and (i & k) == 0:
-            // Sort ascending
-            if dev_values[i] > dev_values[ixj]:
-                swap dev_values[i] with dev_values[ixj]
-
-        if (ixj) > i and (i & k) != 0:
-            // Sort descending
-            if dev_values[i] < dev_values[ixj]:
-                swap dev_values[i] with dev_values[ixj]
+        if ixj > i:
+            if (ixj) > i and (i & k) == 0:
+                // Sort ascending
+                if dev_values[i] > dev_values[ixj]:
+                    swap dev_values[i] with dev_values[ixj]
+    
+            if (ixj) > i and (i & k) != 0:
+                // Sort descending
+                if dev_values[i] < dev_values[ixj]:
+                    swap dev_values[i] with dev_values[ixj]
 
 ```
 
+### Psuedo Code for Odd-Even Transposition Sort (CUDA)
+```
+Define oddEvenSortKernel with input array d_a, size n, and phase:
+  Calculate index based on thread and block indices
+  Define idx1 as index
+  Define idx2 as index + 1
+
+  // Odd and even phases
+  If phase is even and idx2 is less than n and idx1 is even:
+    If d_a[idx1] is greater than d_a[idx2]:
+      Swap d_a[idx1] with d_a[idx2]
+  
+  Else if phase is odd and idx2 is less than n and idx1 is odd:
+    If d_a[idx1] is greater than d_a[idx2]:
+      Swap d_a[idx1] with d_a[idx2]
+
+Define cudaOddEvenSort with input array h_a and size n:
+  Allocate memory for array d_a on the device
+
+  Copy array h_a to device memory (d_a)
+
+  Define number of blocks and threads per block
+
+  For i from 0 to n-1:
+    Call oddEvenSortKernel with d_a, n, and i
+    Synchronize device to ensure kernel completion
+    Optionally, copy d_a to h_a to check intermediate sorting state
+    Print array h_a to display sorting progress (optional step)
+
+  Copy the sorted array d_a back to host array h_a
+
+  Free the device memory allocated for d_a
+```
 ### Psuedo code for Merge Sort(CUDA)
 ```
 global function merge_sort_caller(values):
@@ -91,6 +124,32 @@ global CUDA kernel function merge_sort(values, temp, num_vals, window):
     if l < num_vals:
         call merge function on the device (values, temp, l, m, r)
 ```
+### Psuedo code for Enumeration Sort(CUDA)
+```
+
+begin
+    initialize rank_array, sorted_array
+
+   for each process do
+        divide indexes in array to processes so processes work on indices which are their number + number of workers (loop).
+            loop through array and compare current index to all other values
+                Increment index of current value in the same index of rank array if (A[i] < A[j]) or A[i] = A[j] and i < j).
+                else do not increment
+
+    synchronize
+		
+   for each process do
+        divide indexes in array to processes so processes work on indices which are their number + number of workers (loop).
+
+            sorted_array[rank[working idx]] = array[working idx];
+			
+   
+		
+end ENUM_SORTING
+```
+### Considerations
+We have gotten correct implementations for CUDA uploaded to the github, along with their corresponding caliper files. We were running into issues with testing MPI algorithms, so for now we only have the "rough draft" version of these uploaded to our github. We plan on thouroughly testing these and making appropiate psuedo code. In addition, we are struggling to formulate a valid MPI implementation for many of the algorithms, so we plan to sort those issues out.
+
 ## 3. Project implementation
 Implement your proposed algorithms, and test them starting on a small scale.
 Instrument your code, and turn in at least one Caliper file per algorithm;
