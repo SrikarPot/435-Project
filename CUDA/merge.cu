@@ -100,9 +100,11 @@ void merge_sort_caller(float *values)
   dim3 blocks(BLOCKS,1);    /* Number of blocks   */
   dim3 threads(THREADS,1);  /* Number of threads  */
   CALI_MARK_BEGIN("comp");
+  CALI_MARK_BEGIN("comp_large");
   for(int window = 2; window <= size; window <<=1) {
     merge_sort<<<blocks, threads>>>(dev_values, temp, NUM_VALS, window);
   }
+  CALI_MARK_END("comp_large");
   CALI_MARK_END("comp");
   CALI_MARK_BEGIN("comm");
   CALI_MARK_BEGIN("comm_large");
@@ -165,6 +167,22 @@ int main(int argc, char *argv[])
 //   adiak::value("cudaMemcpy_host_to_device_time", cudaMemcpy_host_to_device_time);
 //   adiak::value("cudaMemcpy_device_to_host_time", cudaMemcpy_device_to_host_time);
   CALI_MARK_END("main");
+  adiak::init(NULL);
+    adiak::launchdate();    // launch date of the job
+    adiak::libraries();     // Libraries used
+    adiak::cmdline();       // Command line used to launch the job
+    adiak::clustername();   // Name of the cluster
+    adiak::value("Algorithm", "MergeSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
+    adiak::value("ProgrammingModel", "CUDA"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
+    adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
+    adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
+    adiak::value("InputType", "Sorted"); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    // adiak::value("num_procs", ); // The number of processors (MPI ranks)
+    adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
+    adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
+    adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("implementation_source", "ONLINE"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
   // Flush Caliper output before finalizing MPI
   mgr.stop();

@@ -3,6 +3,7 @@
 
 CMakeFiles/bitonic.dir/bitonic.cu.o
  /home/aurkorouth/435-Project/CUDA/bitonic.cu
+ /home/aurkorouth/435-Project/helper.h
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
  /usr/include/asm-generic/errno.h

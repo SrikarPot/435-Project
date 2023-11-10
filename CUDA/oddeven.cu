@@ -1,17 +1,8 @@
-/*
- * Parallel bitonic sort using CUDA.
- * Compile with
- * nvcc bitonic_sort.cu
- * Based on http://www.tools-of-computing.com/tc/CS/Sorts/bitonic_sort.htm
- * License: BSD 3
- */
-
-#include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
-
 #include <cuda_runtime.h>
-
+// #include <caliper/cali.h>
+#include <stdlib.h>
+#include <time.h>
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
 #include <adiak.hpp>
@@ -20,26 +11,16 @@ int THREADS;
 int BLOCKS;
 int NUM_VALS;
 
-const char *bitonic_sort_step_region = "bitonic_sort_step";
-const char *cudaMemcpy_host_to_device = "cudaMemcpy_host_to_device";
-const char *cudaMemcpy_device_to_host = "cudaMemcpy_device_to_host";
+// Define the array size
+#define N 8
 
-/* Define Caliper region names */
-const char *host_to_device = "host_to_device";
-const char *device_to_host = "device_to_host";
-const char *bitonic_step = "bitonic_step";
-
-int bitonic_counter = 0;
-
-void print_elapsed(clock_t start, clock_t stop)
+__device__ void device_array_print(float *arr, int length)
 {
-  double elapsed = ((double)(stop - start)) / CLOCKS_PER_SEC;
-  printf("Elapsed time: %.3fs\n", elapsed);
-}
-
-float random_float()
-{
-  return (float)rand() / (float)RAND_MAX;
+  int i;
+  for (i = 0; i < length; ++i)
+  {
+    printf("%1.3f ", arr[i]);
+  }
 }
 
 void array_print(float *arr, int length)
@@ -52,6 +33,109 @@ void array_print(float *arr, int length)
   printf("\n");
 }
 
+// CUDA kernel function for odd-even transposition sort
+__global__ void oddEvenSortKernel(float *d_a, int n, int phase)
+{
+  int index = threadIdx.x + blockDim.x * blockIdx.x;
+  int idx1 = index;
+  int idx2 = index + 1;
+  // Check whether we are in an odd or even phase
+  if ((phase % 2 == 0) && (idx2 < n) && (idx1 % 2 == 0))
+  { // Even phase
+    if (d_a[idx1] > d_a[idx2])
+    {
+      // Swap elements
+      float temp = d_a[idx1];
+      d_a[idx1] = d_a[idx2];
+      d_a[idx2] = temp;
+    }
+  }
+  else if ((phase % 2 == 1) && (idx2 < n) && (idx1 % 2 == 1))
+  { // Odd phase
+    if (d_a[idx1] > d_a[idx2])
+    {
+      // Swap elements
+      float temp = d_a[idx1];
+      d_a[idx1] = d_a[idx2];
+      d_a[idx2] = temp;
+    }
+  }
+}
+
+// Host function to run the odd-even transposition sort
+void cudaOddEvenSort(float *h_a, int n)
+{
+  float *d_a;
+  // Allocate memory on the device
+  cudaMalloc(&d_a, n * sizeof(int));
+  // Copy data from host to device
+  CALI_MARK_BEGIN("comm");
+  CALI_MARK_BEGIN("comm_large");
+  cudaMemcpy(d_a, h_a, n * sizeof(int), cudaMemcpyHostToDevice);
+  CALI_MARK_END("comm_large");
+  CALI_MARK_END("comm");
+
+  // Setup block and grid dimensions
+  dim3 blocks(BLOCKS, 1);   /* Number of blocks   */
+  dim3 threads(THREADS, 1); /* Number of threads  */
+
+  // Caliper instrumentation for computation region
+  // CALI_MARK_BEGIN("comp");
+  // CALI_MARK_BEGIN("comp_large");
+
+  // Launch the kernel multiple times
+  CALI_MARK_BEGIN("comp");
+  CALI_MARK_BEGIN("comp_large");
+  for (int i = 0; i < n; ++i)
+  {
+    oddEvenSortKernel<<<blocks, threads>>>(d_a, n, i);
+    cudaDeviceSynchronize();
+
+  }
+  CALI_MARK_END("comp_large");
+  CALI_MARK_END("comp");
+
+  // CALI_MARK_END("comp_large");
+  // CALI_MARK_END("comp");
+
+  // Copy the sorted array back to the host
+  CALI_MARK_BEGIN("comm");
+  CALI_MARK_BEGIN("comm_large");
+  cudaMemcpy(h_a, d_a, n * sizeof(int), cudaMemcpyDeviceToHost);
+  CALI_MARK_END("comm_large");
+  CALI_MARK_END("comm");
+  // Free device memory
+  cudaFree(d_a);
+}
+
+// Function to initialize data in the array
+void data_init(int *h_a, int n)
+{
+  int init_data[N] = {7, 3, 5, 8, 2, 9, 4, 1};
+  for (int i = 0; i < n; i++)
+  {
+    h_a[i] = init_data[i];
+  }
+}
+
+// Function to check the correctness of the sort
+int correctness_check(float *h_a, int n)
+{
+  for (int i = 1; i < n; i++)
+  {
+    if (h_a[i - 1] > h_a[i])
+    {
+      return 0; // Array is not sorted correctly
+    }
+  }
+  return 1; // Array is sorted correctly
+}
+
+float random_float()
+{
+  return (float)rand() / (float)RAND_MAX;
+}
+
 void array_fill(float *arr, int length)
 {
   srand(time(NULL));
@@ -62,180 +146,82 @@ void array_fill(float *arr, int length)
   }
 }
 
-__global__ void enumerationSort(int *array, int *rank, int n, int THREADS)
-{
-  int k = blockIdx.x * blockDim.x + threadIdx.x;
-
-  for (int i = k; i < n; i += THREADS)
-  {
-
-    if (i < n)
-    {
-      rank[i] = 0;
-      for (int j = 0; j < n; j++)
-      {
-        if (array[j] < array[i] || (array[j] == array[i] && j < i))
-        {
-          rank[i]++;
-        }
-      }
-    }
-  }
-}
-
-// Helper function to swap two integers
-__device__ void swap(int &a, int &b)
-{
-  int temp = a;
-  a = b;
-  b = temp;
-}
-
-// CUDA kernel for sorting the array based on ranks
-__global__ void sortArray(int *array, int *rank, int n, int THREADS)
-{
-  int k = blockIdx.x * blockDim.x + threadIdx.x;
-
-  CALI_MARK_BEGIN("comp");
-  CALI_MARK_BEGIN("comp_large");
-  for (int i = k; i < n; i += THREADS)
-  {
-    if (i < n)
-    {
-      for (int j = 0; j < n; j++)
-      {
-        if (rank[j] == i)
-        {
-          swap(array[j], array[i]);
-          swap(rank[j], rank[i]);
-          break;
-        }
-      }
-    }
-  }
-  CALI_MARK_END("comp");
-  CALI_MARK_END("comp_large");
-}
-
 int main(int argc, char *argv[])
 {
+  CALI_MARK_BEGIN("main");
 
-  THREADS = atoi(argv[1]);
-  NUM_VALS = atoi(argv[2]);
+  THREADS = atoi(argv[1]);  // Number of threads
+  NUM_VALS = atoi(argv[2]); // Number of values in the array
   BLOCKS = NUM_VALS / THREADS;
+  float *values = (float *)malloc(NUM_VALS * sizeof(float));
+
+  // CALI_MARK_BEGIN("main");
 
   printf("Number of threads: %d\n", THREADS);
   printf("Number of values: %d\n", NUM_VALS);
   printf("Number of blocks: %d\n", BLOCKS);
 
-  // Create caliper ConfigManager object
+  // Initialize data in the host array
+  // CALI_MARK_BEGIN("data_init");
+  // data_init(h_a, N);
+  array_fill(values, NUM_VALS);
+  array_print(values, NUM_VALS);
+
   cali::ConfigManager mgr;
   mgr.start();
 
-  const int n = NUM_VALS; // Size of the array
-  int *h_array = new int[n];
-  int *h_rank = new int[n];
-  int *sorted_array = new int[n];
+  // CALI_MARK_END("data_init");
 
-  // Initialize the array with random values
-  srand(static_cast<unsigned int>(time(nullptr)));
-  for (int i = 0; i < n; i++)
-  {
-    h_array[i] = rand() % 100;
-  }
+  // Caliper annotation for communication region, for example with MPI (not present in the code)
+  // CALI_MARK_BEGIN("comm");
 
-  // Print the og array
-  std::cout << "Original Array: ";
-  for (int i = 0; i < n; i++)
-  {
-    std::cout << h_array[i] << " ";
-  }
-  std::cout << std::endl;
+  // CALI_MARK_END("comm");
 
-  // Device arrays
-  int *d_array, *d_rank;
-  cudaMalloc((void **)&d_array, sizeof(int) * n);
-  cudaMalloc((void **)&d_rank, sizeof(int) * n);
-
-  // Copy data from host to device
-  cudaMemcpy(d_array, h_array, sizeof(int) * n, cudaMemcpyHostToDevice);
-
-  // Launch the enumeration sort kernel
-  enumerationSort<<<BLOCKS, THREADS>>>(d_array, d_rank, n, THREADS);
+  // Caliper instrumentation for computation region
+  CALI_MARK_BEGIN("comp");
+  CALI_MARK_BEGIN("comp_large");
+  // Perform sorting on the GPU
+  cudaOddEvenSort(values, NUM_VALS);
   cudaDeviceSynchronize();
 
-  // Launch the sorting kernel to rearrange the array
-  // sortArray<<<BLOCKS, THREADS>>>(d_array, d_rank, n, THREADS);
-  // cudaDeviceSynchronize();
+  CALI_MARK_END("comp_large");
+  CALI_MARK_END("comp");
 
-  // Copy the sorted array and ranks back to the host
-  cudaMemcpy(h_array, d_array, sizeof(int) * n, cudaMemcpyDeviceToHost);
-  cudaMemcpy(h_rank, d_rank, sizeof(int) * n, cudaMemcpyDeviceToHost);
+  // Caliper annotation for checking the correctness of the sorting operation
+  CALI_MARK_BEGIN("correctness_check");
+  int is_correct = correctness_check(values, NUM_VALS);
+  CALI_MARK_END("correctness_check");
 
-  for (int i = 0; i < NUM_VALS; i++)
+  if (is_correct)
   {
-    sorted_array[h_rank[i]] = h_array[i];
+    printf("The array is sorted correctly.\n");
   }
-
-  // Print the sorted array
-  std::cout << "Sorted Array: ";
-  for (int i = 0; i < n; i++)
+  else
   {
-    std::cout << sorted_array[i] << " ";
+    printf("The array is NOT sorted correctly.\n");
   }
-  std::cout << std::endl;
+    array_print(values, NUM_VALS);
+   CALI_MARK_END("main");
+adiak::init(NULL);
+    adiak::launchdate();    // launch date of the job
+    adiak::libraries();     // Libraries used
+    adiak::cmdline();       // Command line used to launch the job
+    adiak::clustername();   // Name of the cluster
+    adiak::value("Algorithm", "ODDEVENSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
+    adiak::value("ProgrammingModel", "CUDA"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
+    adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
+    adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
+    adiak::value("InputType", "Sorted"); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    // adiak::value("num_procs", ); // The number of processors (MPI ranks)
+    adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
+    adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
+    adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("implementation_source", "Online"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
-  // Clean up
-  delete[] h_array;
-  delete[] h_rank;
-  delete[] sorted_array;
-  cudaFree(d_array);
-  cudaFree(d_rank);
-
-  adiak::init(NULL);
-  adiak::launchdate();                              // launch date of the job
-  adiak::libraries();                               // Libraries used
-  adiak::cmdline();                                 // Command line used to launch the job
-  adiak::clustername();                             // Name of the cluster
-  adiak::value("Algorithm", "EnumerationSort");     // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
-  adiak::value("ProgrammingModel", "CUDA");         // e.g., "MPI", "CUDA", "MPIwithCUDA"
-  adiak::value("Datatype", "int");                  // The datatype of input elements (e.g., double, int, float)
-  adiak::value("SizeOfDatatype", "sizeOfDatatype"); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
-  adiak::value("InputSize", "inputSize");           // The number of elements in input dataset (1000)
-  adiak::value("InputType", "inputType");           // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
-  adiak::value("num_procs", "num_procs");           // The number of processors (MPI ranks)
-  adiak::value("num_threads", THREADS);             // The number of CUDA or OpenMP threads
-  adiak::value("num_blocks", BLOCKS);               // The number of CUDA blocks
-  adiak::value("group_num", "group_number");        // The number of your group (integer, e.g., 1, 10)
-  adiak::value("implementation_source", "Online");  // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
-
-  //   print_elapsed(start, stop);
-
-  // Store results in these variables.
-
-  //   printf("\neffective_bandwidth_gb_s: %.7f\n", effective_bandwidth_gb_s);
-  //   printf("bitonic_sort_step_time: %.7f\n", bitonic_sort_step_time);
-  //   printf("cudaMemcpy_host_to_device_time: %.7f\n", cudaMemcpy_host_to_device_time);
-  //   printf("cudaMemcpy_device_to_host_time: %.7f\n", cudaMemcpy_device_to_host_time);
-  //   printf("\ntotal time: %.7f\n", (ms_bitonic_step + ms_host_to_device + ms_device_to_host));
-
-  //   adiak::init(NULL);
-  //   adiak::user();
-  //   adiak::launchdate();
-  //   adiak::libraries();
-  //   adiak::cmdline();
-  //   adiak::clustername();
-  //   adiak::value("num_threads", THREADS);
-  //   adiak::value("num_blocks", BLOCKS);
-  //   adiak::value("num_vals", NUM_VALS);
-  //   adiak::value("program_name", "cuda_bitonic_sort");
-  //   adiak::value("datatype_size", sizeof(float));
-  //   adiak::value("effective_bandwidth (GB/s)", effective_bandwidth_gb_s);
-  //   adiak::value("bitonic_sort_step_time", bitonic_sort_step_time);
-  //   adiak::value("cudaMemcpy_host_to_device_time", cudaMemcpy_host_to_device_time);
-  //   adiak::value("cudaMemcpy_device_to_host_time", cudaMemcpy_device_to_host_time);
-
-  // Flush Caliper output before finalizing MPI
+  // Thicket.tree();
   mgr.stop();
   mgr.flush();
+
+  return 0;
 }

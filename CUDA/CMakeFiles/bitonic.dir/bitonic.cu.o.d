@@ -307,4 +307,5 @@ CMakeFiles/bitonic.dir/bitonic.cu.o : /home/aurkorouth/435-Project/CUDA/bitonic.
     /usr/include/c++/8/bits/deque.tcc \
     /usr/include/c++/8/cassert \
     /usr/include/c++/8/cstring \
-    /usr/include/cuda.h
+    /usr/include/cuda.h \
+    /home/aurkorouth/435-Project/CUDA/../helper.h
