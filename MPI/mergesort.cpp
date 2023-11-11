@@ -1,107 +1,120 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
-#include <iostream>
-
+#include <stdlib.h>
+#include <mpi.h>
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
 #include <adiak.hpp>
+#include "../helper.h"
 
-#include <cuda_runtime.h>
-#include <cuda.h>
+int rank, size;
+int n,loc;
+void merge(float* values, float* temp, int l, int m, int r)  {
 
-void merge(int arr[], int left, int mid, int right) {
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
+  if(values[m] <= values[m+1]) return; // subarrays already sorted
 
-    int L[n1], R[n2];
 
-    for (int i = 0; i < n1; i++)
-        L[i] = arr[left + i];
-    for (int j = 0; j < n2; j++)
-        R[j] = arr[mid + 1 + j];
+  int i = l;
+  int j = m+1;
+  int k = l;
 
-    int i = 0, j = 0, k = left;
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
-        } else {
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
+  if(rank == 0) {
+    printf("%d %d %d\n", l, m, r);
+  }
 
-    while (i < n1) {
-        arr[k] = L[i];
-        i++;
-        k++;
-    }
+  while(i <= m && j <= r) {
+    if(values[i] > values[j])
+      temp[k++] = values[j++];
+    else
+      temp[k++] = values[i++];
+  }
 
-    while (j < n2) {
-        arr[k] = R[j];
-        j++;
-        k++;
-    }
+  // add left over values from first half
+  while(i <= m) {
+    temp[k++] = values[i++];
+  }
+
+  //add left over values from second half
+  while(j <= r) {
+    temp[k++] = values[j++];
+  }
+
+
+  // copy over to main array
+  for(i = l; i <= r; i++) {
+    values[i] = temp[i];
+  }
+
+      if(rank == 0) {
+        //array_print(temp, n);
+        array_print(values, n);
+     }
 }
 
-void merge_sort(int arr[], int left, int right) {
-    if (left < right) {
-        int mid = left + (right - left) / 2;
 
-        merge_sort(arr, left, mid);
-        merge_sort(arr, mid + 1, right);
+void mergeSort(float* values, float* temp, int l, int r) {
+    if (l < r) {
+        int m = l + (r - l) / 2;
 
-        merge(arr, left, mid, right);
+        mergeSort(values, temp, l, m);
+        mergeSort(values, temp, m + 1, r);
+        merge(values, temp, l, m, r);
+        printf("--------------\n");
+        array_print(values, n);
     }
 }
 
 int main(int argc, char *argv[]) {
-    
-    int rank, size;
-    int array_size;
-
-    if (argc != 2) {
-        printf("Usage: %s <array_size>\n", argv[0]);
-        return 1;
-    }
-
-    array_size = atoi(argv[1]);
-    int array[array_size];
-
-    for (int i = 0; i < array_size; i++)
-        array[i] = rand() % 100; // Filling array with random values for demonstration
+  //  int rank, size;
+    n = atoi(argv[1]); // Change this to your desired array size
+    float *arr ;
+    int local_n;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    int local_size = array_size / size;
-    int local_array[local_size];
-
-    MPI_Scatter(array, local_size, MPI_INT, local_array, local_size, MPI_INT, 0, MPI_COMM_WORLD);
-
-    merge_sort(local_array, 0, local_size - 1);
-
-    int sorted_array[array_size];
-
-    MPI_Gather(local_array, local_size, MPI_INT, sorted_array, local_size, MPI_INT, 0, MPI_COMM_WORLD);
-
     if (rank == 0) {
-        merge_sort(sorted_array, 0, array_size - 1);
-
-        printf("Original Array: ");
-        for (int i = 0; i < array_size; i++)
-            printf("%d ", array[i]);
-        printf("\n");
-
-        printf("Sorted Array: ");
-        for (int i = 0; i < array_size; i++)
-            printf("%d ", sorted_array[i]);
-        printf("\n");
+        arr =(float *)malloc(n * sizeof(int));
+        array_fill(arr, n);
+ //       array_print(arr,n);
     }
 
+    local_n = n / size;
+    loc = local_n;
+    float *local_arr = (float *)malloc(local_n * sizeof(int));
+    float *temp = (float*)malloc(local_n*sizeof(int));
+
+    MPI_Scatter(arr, local_n, MPI_INT, local_arr, local_n, MPI_INT, 0, MPI_COMM_WORLD);
+  //  array_print(local_arr, local_n);
+      // if(rank == 1)
+      //   array_print(local_arr, local_n);
+    mergeSort(local_arr, temp, 0, local_n - 1);
+    // if(rank == 1)
+    //    array_print(local_arr, local_n);
+
+    float *sorted = NULL;
+    if (rank == 0) {
+        sorted = (float *)malloc(n * sizeof(float));
+    }
+
+    MPI_Gather(local_arr, local_n, MPI_INT, sorted, local_n, MPI_INT, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        float* glob_temp = (float *)malloc(n * sizeof(float));
+        array_print(sorted, n);
+  //      printf("---------------\n");
+        mergeSort(sorted, glob_temp, 0, n - 1);
+
+    //    printf("final:\n");
+        array_print(sorted,n);
+
+        free(sorted);
+        free(arr);
+        free(glob_temp);
+    }
+
+    free(local_arr);
+    free(temp);
     MPI_Finalize();
     return 0;
 }

@@ -1,0 +1,86 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "MultipleExecutables",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "bitonic::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-bitonic-Debug-af3dc25c1435d5d19a2a.json",
+					"name" : "bitonic",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "enumeration::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-enumeration-Debug-e8fbac74c824e970eb41.json",
+					"name" : "enumeration",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "merge::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-merge-Debug-331d79439adc5a11fec9.json",
+					"name" : "merge",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "oddeven::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-oddeven-Debug-57af55613302fa96727d.json",
+					"name" : "oddeven",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/aurkorouth/435-Project/build",
+		"source" : "/home/aurkorouth/435-Project/CUDA"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}
