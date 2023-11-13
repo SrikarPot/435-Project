@@ -150,17 +150,17 @@ enumeration/fast:
 .PHONY : enumeration/fast
 
 #=============================================================================
-# Target rules for targets named merges
+# Target rules for targets named merge
 
 # Build rule for target.
-merges: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 merges
-.PHONY : merges
+merge: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 merge
+.PHONY : merge
 
 # fast build rule for target.
-merges/fast:
-	$(MAKE) -f CMakeFiles/merges.dir/build.make CMakeFiles/merges.dir/build
-.PHONY : merges/fast
+merge/fast:
+	$(MAKE) -f CMakeFiles/merge.dir/build.make CMakeFiles/merge.dir/build
+.PHONY : merge/fast
 
 bitonic.o: bitonic.cpp.o
 
@@ -222,7 +222,7 @@ merge.o: merge.cpp.o
 
 # target to build an object file
 merge.cpp.o:
-	$(MAKE) -f CMakeFiles/merges.dir/build.make CMakeFiles/merges.dir/merge.cpp.o
+	$(MAKE) -f CMakeFiles/merge.dir/build.make CMakeFiles/merge.dir/merge.cpp.o
 .PHONY : merge.cpp.o
 
 merge.i: merge.cpp.i
@@ -231,7 +231,7 @@ merge.i: merge.cpp.i
 
 # target to preprocess a source file
 merge.cpp.i:
-	$(MAKE) -f CMakeFiles/merges.dir/build.make CMakeFiles/merges.dir/merge.cpp.i
+	$(MAKE) -f CMakeFiles/merge.dir/build.make CMakeFiles/merge.dir/merge.cpp.i
 .PHONY : merge.cpp.i
 
 merge.s: merge.cpp.s
@@ -240,7 +240,7 @@ merge.s: merge.cpp.s
 
 # target to generate assembly for a file
 merge.cpp.s:
-	$(MAKE) -f CMakeFiles/merges.dir/build.make CMakeFiles/merges.dir/merge.cpp.s
+	$(MAKE) -f CMakeFiles/merge.dir/build.make CMakeFiles/merge.dir/merge.cpp.s
 .PHONY : merge.cpp.s
 
 oddeven.o: oddeven.cpp.o
@@ -281,7 +281,7 @@ help:
 	@echo "... oddeven"
 	@echo "... bitonic"
 	@echo "... enumeration"
-	@echo "... merges"
+	@echo "... merge"
 	@echo "... bitonic.o"
 	@echo "... bitonic.i"
 	@echo "... bitonic.s"

@@ -21,7 +21,7 @@ function(add_custom_executable EXECUTABLE_NAME SOURCE_FILE)
 endfunction()
 
 # Add an executable for mergesort.cpp
-add_custom_executable(merges merge.cpp)
+add_custom_executable(merge merge.cpp)
 
 # Add an executable for enumeration.cpp
 add_custom_executable(enumeration enumeration.cpp)

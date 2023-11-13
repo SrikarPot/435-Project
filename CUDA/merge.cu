@@ -85,9 +85,13 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
   int size = NUM_VALS * sizeof(float);
   CALI_MARK_BEGIN("comm");
   CALI_MARK_BEGIN("comm_large");
+  CALI_MARK_BEGIN("cudaMalloc");
   cudaMalloc((void**)&dev_values, size);
   cudaMalloc((void**)&temp, size);
+  CALI_MARK_END("cudaMalloc");
+  CALI_MARK_BEGIN("cudaMemcpyHostToDevice");
   cudaMemcpy(dev_values, values, size, cudaMemcpyHostToDevice);
+  CALI_MARK_END("cudaMemcpyHostToDevice");
   CALI_MARK_END("comm_large");
   CALI_MARK_END("comm");
   
@@ -100,11 +104,17 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
   }
   CALI_MARK_END("comp_large");
   CALI_MARK_END("comp");
+
+
   CALI_MARK_BEGIN("comm");
   CALI_MARK_BEGIN("comm_large");
+  CALI_MARK_BEGIN("cudaMemcpyDeviceToHost");
   cudaMemcpy(values, dev_values, size, cudaMemcpyDeviceToHost);
+  CALI_MARK_END("cudaMemcpyDeviceToHost");
+  CALI_MARK_BEGIN("cudaFree");
   cudaFree(dev_values);
   cudaFree(temp);
+  CALI_MARK_END("cudaFree");
   CALI_MARK_END("comm_large");
   CALI_MARK_END("comm");
   
@@ -116,6 +126,7 @@ int main(int argc, char *argv[])
   THREADS = atoi(argv[1]);
   NUM_VALS = atoi(argv[2]);
   BLOCKS = NUM_VALS / THREADS;
+  std::string input_type = argv[3];
 
   printf("Number of values: %d\n", NUM_VALS);
   printf("Number of values: %d\n", NUM_VALS);
@@ -127,7 +138,7 @@ int main(int argc, char *argv[])
   clock_t start, stop;
   CALI_MARK_BEGIN("data_init");
   float *values = (float*) malloc( NUM_VALS * sizeof(float));
-  array_fill(values, NUM_VALS);
+  array_fill(values, NUM_VALS, input_type);
   CALI_MARK_END("data_init");
 
   start = clock();
@@ -135,16 +146,10 @@ int main(int argc, char *argv[])
   stop = clock();
 
   print_elapsed(start, stop);
-  array_print(values, NUM_VALS);
-//   double elapsed = ((double) (stop - start)) / CLOCKS_PER_SEC;
-//   effective_bandwidth_gb_s = kernelCalls*6*NUM_VALS*sizeof(float)/1e9/elapsed;
-
-//   printf("kernel calls: %d\n", kernelCalls);
-//   printf("cudaMemcpy_host_to_device_time: %f\n", cudaMemcpy_host_to_device_time/1000);
-//   printf("cudaMemcpy_device_to_host_time: %f\n", cudaMemcpy_device_to_host_time/1000);
-//   printf("bitonic_sort_step_time: %f\n", bitonic_sort_step_time/1000);
-//   printf("effective_bandwitdth_gb_s: %f\n", effective_bandwidth_gb_s);
-
+  CALI_MARK_BEGIN("correctness_check");
+  bool correct = correctness_check(values, NUM_VALS);
+  CALI_MARK_END("correctness_check");
+  if(correct) printf("Array correctly sorted\n");
 
   CALI_MARK_END("main");
     adiak::init(NULL);
