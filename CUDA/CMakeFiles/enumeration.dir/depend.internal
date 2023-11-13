@@ -3,6 +3,7 @@
 
 CMakeFiles/enumeration.dir/enumeration.cu.o
  /home/aurkorouth/proj/435-Project/CUDA/enumeration.cu
+ /home/aurkorouth/proj/435-Project/helper.h
  /scratch/group/csce435-f23/Adiak/adiak/include/adiak.h
  /scratch/group/csce435-f23/Adiak/adiak/include/adiak.hpp
  /scratch/group/csce435-f23/Adiak/adiak/include/adiak_internal.hpp

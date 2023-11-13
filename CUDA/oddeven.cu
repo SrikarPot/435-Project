@@ -7,6 +7,9 @@
 #include <caliper/cali-manager.h>
 #include <adiak.hpp>
 
+
+#include "../helper.h"
+
 int THREADS;
 int BLOCKS;
 int NUM_VALS;
@@ -14,24 +17,6 @@ int NUM_VALS;
 // Define the array size
 #define N 8
 
-__device__ void device_array_print(float *arr, int length)
-{
-  int i;
-  for (i = 0; i < length; ++i)
-  {
-    printf("%1.3f ", arr[i]);
-  }
-}
-
-void array_print(float *arr, int length)
-{
-  int i;
-  for (i = 0; i < length; ++i)
-  {
-    printf("%1.3f ", arr[i]);
-  }
-  printf("\n");
-}
 
 // CUDA kernel function for odd-even transposition sort
 __global__ void oddEvenSortKernel(float *d_a, int n, int phase)
@@ -108,43 +93,9 @@ void cudaOddEvenSort(float *h_a, int n)
   cudaFree(d_a);
 }
 
-// Function to initialize data in the array
-void data_init(int *h_a, int n)
-{
-  int init_data[N] = {7, 3, 5, 8, 2, 9, 4, 1};
-  for (int i = 0; i < n; i++)
-  {
-    h_a[i] = init_data[i];
-  }
-}
 
-// Function to check the correctness of the sort
-int correctness_check(float *h_a, int n)
-{
-  for (int i = 1; i < n; i++)
-  {
-    if (h_a[i - 1] > h_a[i])
-    {
-      return 0; // Array is not sorted correctly
-    }
-  }
-  return 1; // Array is sorted correctly
-}
 
-float random_float()
-{
-  return (float)rand() / (float)RAND_MAX;
-}
 
-void array_fill(float *arr, int length)
-{
-  srand(time(NULL));
-  int i;
-  for (i = 0; i < length; ++i)
-  {
-    arr[i] = random_float();
-  }
-}
 
 int main(int argc, char *argv[])
 {

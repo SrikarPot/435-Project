@@ -61,8 +61,9 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/oddeven.dir/DependInfo.cmake"
-  "CMakeFiles/enumeration.dir/DependInfo.cmake"
-  "CMakeFiles/bitonic.dir/DependInfo.cmake"
   "CMakeFiles/merge.dir/DependInfo.cmake"
+  "CMakeFiles/bitonic.dir/DependInfo.cmake"
+  "CMakeFiles/enumeration.dir/DependInfo.cmake"
+  "CMakeFiles/oddeven.dir/DependInfo.cmake"
+  "CMakeFiles/clean_all.dir/DependInfo.cmake"
   )

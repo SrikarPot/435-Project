@@ -15,14 +15,15 @@
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
 #include <adiak.hpp>
+#include "../helper.h"
 
 int THREADS;
 int BLOCKS;
 int NUM_VALS;
 
-const char* bitonic_sort_step_region = "bitonic_sort_step";
-const char* cudaMemcpy_host_to_device = "cudaMemcpy_host_to_device";
-const char* cudaMemcpy_device_to_host = "cudaMemcpy_device_to_host";
+// const char* bitonic_sort_step_region = "bitonic_sort_step";
+// const char* cudaMemcpy_host_to_device = "cudaMemcpy_host_to_device";
+// const char* cudaMemcpy_device_to_host = "cudaMemcpy_device_to_host";
 
 /* Define Caliper region names */
 const char* comm = "comm";
@@ -32,34 +33,6 @@ const char* comp_large = "comp_large";
 
 int bitonic_counter = 0;
 
-void print_elapsed(clock_t start, clock_t stop)
-{
-  double elapsed = ((double) (stop - start)) / CLOCKS_PER_SEC;
-  printf("Elapsed time: %.3fs\n", elapsed);
-}
-
-float random_float()
-{
-  return (float)rand()/(float)RAND_MAX;
-}
-
-void array_print(float *arr, int length) 
-{
-  int i;
-  for (i = 0; i < length; ++i) {
-    printf("%1.3f ",  arr[i]);
-  }
-  printf("\n");
-}
-
-void array_fill(float *arr, int length)
-{
-  srand(time(NULL));
-  int i;
-  for (i = 0; i < length; ++i) {
-    arr[i] = random_float();
-  }
-}
 
 __global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;

@@ -21,6 +21,14 @@ caliper/cali-manager.h
 -
 adiak.hpp
 -
+../helper.h
+/home/aurkorouth/proj/435-Project/helper.h
+
+/home/aurkorouth/proj/435-Project/helper.h
+iostream
+-
+string
+-
 
 /scratch/group/csce435-f23/Adiak/adiak/include/adiak.h
 stddef.h

@@ -40,3 +40,7 @@ target_include_directories(enumeration PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../)
 target_link_libraries(enumeration PRIVATE MPI::MPI_CXX)
 target_link_libraries(enumeration PRIVATE caliper)
 # target_link_libraries(enumeration PRIVATE adiak)
+add_custom_target(clean_all
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/CleanAll.cmake
+    COMMENT "Cleaning build artifacts"
+)

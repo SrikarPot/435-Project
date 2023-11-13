@@ -56,17 +56,6 @@ CMAKE_BINARY_DIR = /home/aurkorouth/proj/435-Project/CUDA
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target edit_cache
-edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/sw/eb/sw/CMake/3.12.1-GCCcore-7.3.0/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : edit_cache
-
-# Special rule for the target edit_cache
-edit_cache/fast: edit_cache
-
-.PHONY : edit_cache/fast
-
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
@@ -77,6 +66,17 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target edit_cache
+edit_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/sw/eb/sw/CMake/3.12.1-GCCcore-7.3.0/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : edit_cache
+
+# Special rule for the target edit_cache
+edit_cache/fast: edit_cache
+
+.PHONY : edit_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -111,30 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named oddeven
+# Target rules for targets named merge
 
 # Build rule for target.
-oddeven: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 oddeven
-.PHONY : oddeven
+merge: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 merge
+.PHONY : merge
 
 # fast build rule for target.
-oddeven/fast:
-	$(MAKE) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/build
-.PHONY : oddeven/fast
-
-#=============================================================================
-# Target rules for targets named enumeration
-
-# Build rule for target.
-enumeration: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 enumeration
-.PHONY : enumeration
-
-# fast build rule for target.
-enumeration/fast:
-	$(MAKE) -f CMakeFiles/enumeration.dir/build.make CMakeFiles/enumeration.dir/build
-.PHONY : enumeration/fast
+merge/fast:
+	$(MAKE) -f CMakeFiles/merge.dir/build.make CMakeFiles/merge.dir/build
+.PHONY : merge/fast
 
 #=============================================================================
 # Target rules for targets named bitonic
@@ -150,17 +137,43 @@ bitonic/fast:
 .PHONY : bitonic/fast
 
 #=============================================================================
-# Target rules for targets named merge
+# Target rules for targets named enumeration
 
 # Build rule for target.
-merge: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 merge
-.PHONY : merge
+enumeration: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 enumeration
+.PHONY : enumeration
 
 # fast build rule for target.
-merge/fast:
-	$(MAKE) -f CMakeFiles/merge.dir/build.make CMakeFiles/merge.dir/build
-.PHONY : merge/fast
+enumeration/fast:
+	$(MAKE) -f CMakeFiles/enumeration.dir/build.make CMakeFiles/enumeration.dir/build
+.PHONY : enumeration/fast
+
+#=============================================================================
+# Target rules for targets named oddeven
+
+# Build rule for target.
+oddeven: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 oddeven
+.PHONY : oddeven
+
+# fast build rule for target.
+oddeven/fast:
+	$(MAKE) -f CMakeFiles/oddeven.dir/build.make CMakeFiles/oddeven.dir/build
+.PHONY : oddeven/fast
+
+#=============================================================================
+# Target rules for targets named clean_all
+
+# Build rule for target.
+clean_all: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 clean_all
+.PHONY : clean_all
+
+# fast build rule for target.
+clean_all/fast:
+	$(MAKE) -f CMakeFiles/clean_all.dir/build.make CMakeFiles/clean_all.dir/build
+.PHONY : clean_all/fast
 
 bitonic.o: bitonic.cu.o
 
@@ -276,12 +289,13 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... oddeven"
-	@echo "... enumeration"
-	@echo "... bitonic"
 	@echo "... merge"
+	@echo "... bitonic"
+	@echo "... enumeration"
+	@echo "... oddeven"
+	@echo "... clean_all"
+	@echo "... edit_cache"
 	@echo "... bitonic.o"
 	@echo "... bitonic.i"
 	@echo "... bitonic.s"

@@ -3,6 +3,10 @@
 
 CMakeFiles/oddeven.dir/oddeven.cu.o
  /home/aurkorouth/proj/435-Project/CUDA/oddeven.cu
+ /home/aurkorouth/proj/435-Project/helper.h
+ /scratch/group/csce435-f23/Adiak/adiak/include/adiak.h
+ /scratch/group/csce435-f23/Adiak/adiak/include/adiak.hpp
+ /scratch/group/csce435-f23/Adiak/adiak/include/adiak_internal.hpp
  /scratch/group/csce435-f23/Caliper/caliper/include/caliper/Annotation.h
  /scratch/group/csce435-f23/Caliper/caliper/include/caliper/ChannelController.h
  /scratch/group/csce435-f23/Caliper/caliper/include/caliper/ConfigManager.h

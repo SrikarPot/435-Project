@@ -30,12 +30,6 @@ float effective_bandwidth_gb_s = 0;
 float bitonic_sort_step_time = 0;
 float cudaMemcpy_host_to_device_time = 0;
 float cudaMemcpy_device_to_host_time = 0;
-
-
-
-
-
-
 __global__ void bitonic_sort_step(float *dev_values, int j, int k)
 {
   unsigned int i, ixj; /* Sorting partners: i and ixj */

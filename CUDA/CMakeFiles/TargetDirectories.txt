@@ -1,6 +1,7 @@
-/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/edit_cache.dir
 /home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/rebuild_cache.dir
-/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/oddeven.dir
-/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/enumeration.dir
-/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/bitonic.dir
 /home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/merge.dir
+/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/bitonic.dir
+/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/enumeration.dir
+/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/oddeven.dir
+/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/clean_all.dir
+/home/aurkorouth/proj/435-Project/CUDA/CMakeFiles/edit_cache.dir

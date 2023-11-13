@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/home/aurkorouth/435-Project/CUDA/build",
-  "command": "/usr/bin/nvcc   -I/home/aurkorouth/435-Project/CUDA/merge_sort/.. -isystem /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -isystem /usr/lib/x86_64-linux-gnu/openmpi/include -g -std=c++14 -Xcompiler -pthread -x cu -c /home/aurkorouth/435-Project/CUDA/merge_sort/merge.cu -o CMakeFiles/merge.dir/merge.cu.o",
-  "file": "/home/aurkorouth/435-Project/CUDA/merge_sort/merge.cu",
-  "output": "CMakeFiles/merge.dir/merge.cu.o"
-}
-]

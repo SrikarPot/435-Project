@@ -22,9 +22,6 @@ int BLOCKS;
 int NUM_VALS;
 int kernelCalls = 0;
 
-const char* bitonic_sort_step_region = "bitonic_sort_step";
-const char* cudaMemcpy_host_to_device = "cudaMemcpy_host_to_device";
-const char* cudaMemcpy_device_to_host = "cudaMemcpy_device_to_host";
 
 // Store results in these variables.
 float effective_bandwidth_gb_s;
@@ -83,7 +80,7 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
  * Inplace merge sort using CUDA.
  */
   void merge_sort_caller(float *values)
-`{
+{
   float *dev_values, *temp;
   int size = NUM_VALS * sizeof(float);
   CALI_MARK_BEGIN("comm");
