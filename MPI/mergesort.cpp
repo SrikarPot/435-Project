@@ -67,20 +67,21 @@ int main(int argc, char *argv[]) {
         array_fill(arr, n);
     }
 
-    for(int subarr_size = n / size; subarr_size <= n; subarr_size <<=1) {
+    for(int subarr_size = n / size, i = 1; subarr_size <= n; subarr_size <<=1, i <<=1) {
         MPI_Comm custom_comm;
-        MPI_Comm_split(MPI_COMM_WORLD, (rank % subarr_size == 0) ? 1 : MPI_UNDEFINED, rank, &custom_comm);
-        if(rank % subarr_size == 0) {
+        MPI_Comm_split(MPI_COMM_WORLD, (rank % i == 0) ? 1 : MPI_UNDEFINED, rank, &custom_comm);
+        if(rank % i == 0) {
             int custom_rank;
             MPI_Comm_rank(custom_comm, &custom_rank);
             float *local_arr = (float*)malloc(subarr_size * sizeof(float));
             float *temp = (float*)malloc(subarr_size * sizeof(float));
             MPI_Scatter(arr, subarr_size, MPI_FLOAT, local_arr, subarr_size, MPI_FLOAT, 0, custom_comm);
             mergeSort(local_arr, temp, 0, subarr_size-1);
-            MPI_Gather(arr, subarr_size, MPI_FLOAT, local_arr, subarr_size, MPI_FLOAT, 0, custom_comm);
+            MPI_Gather(local_arr, subarr_size, MPI_FLOAT, arr, subarr_size, MPI_FLOAT, 0, custom_comm);
             free(local_arr);
             free(temp);
         }
+        // MPI_Comm_free(&custom_comm);
     }
 
 
