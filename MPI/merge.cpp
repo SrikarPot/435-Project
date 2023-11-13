@@ -54,6 +54,8 @@ void mergeSort(float* values, float* temp, int l, int r) {
 
 int main(int argc, char *argv[]) {
   //  int rank, size;
+    CALI_MARK_BEGIN("main");
+
     n = atoi(argv[1]); // Change this to your desired array size
     float *arr ;
     int local_n;
@@ -63,8 +65,10 @@ int main(int argc, char *argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if (rank == 0) {
+        CALI_MARK_BEGIN("data_init");
         arr =(float *)malloc(n * sizeof(int));
         array_fill(arr, n, input_type);
+        CALI_MARK_END("data_init");
     }
 
     for(int subarr_size = n / size, i = 1; subarr_size <= n; subarr_size <<=1, i <<=1) {
@@ -72,12 +76,32 @@ int main(int argc, char *argv[]) {
         MPI_Comm_split(MPI_COMM_WORLD, (rank % i == 0) ? 1 : MPI_UNDEFINED, rank, &custom_comm);
         if(rank % i == 0) {
             int custom_rank;
+            
             MPI_Comm_rank(custom_comm, &custom_rank);
             float *local_arr = (float*)malloc(subarr_size * sizeof(float));
             float *temp = (float*)malloc(subarr_size * sizeof(float));
+            CALI_MARK_BEGIN("comm");
+            CALI_MARK_BEGIN("comm_large");
+            CALI_MARK_BEGIN("MPI_Scatter");
             MPI_Scatter(arr, subarr_size, MPI_FLOAT, local_arr, subarr_size, MPI_FLOAT, 0, custom_comm);
+            CALI_MARK_END("MPI_Scatter");
+            CALI_MARK_END("comm_large");
+            CALI_MARK_END("comm");
+
+            CALI_MARK_BEGIN("comp");
+            CALI_MARK_BEGIN("comp_large");
             mergeSort(local_arr, temp, 0, subarr_size-1);
+            CALI_MARK_END("comp_large");
+            CALI_MARK_END("comp");
+
+
+            CALI_MARK_BEGIN("comm");
+            CALI_MARK_BEGIN("comm_large");
+            CALI_MARK_BEGIN("MPI_Gather");
             MPI_Gather(local_arr, subarr_size, MPI_FLOAT, arr, subarr_size, MPI_FLOAT, 0, custom_comm);
+            CALI_MARK_END("MPI_Gather");
+            CALI_MARK_END("comm_large");
+            CALI_MARK_END("comm");
             free(local_arr);
             free(temp);
         }
@@ -86,9 +110,17 @@ int main(int argc, char *argv[]) {
 
 
     if (rank == 0) {
-        array_print(arr,n);
+        CALI_MARK_BEGIN("correctness_check");
+        if(correctness_check(arr, n)) {
+          printf("Array correctly sorted!\n");
+        } else {
+          printf("Array sorting failed\n");
+        }
+        CALI_MARK_END("correctness_check");
         free(arr);
     }
+
+    CALI_MARK_END("main");
     adiak::init(NULL);
     adiak::launchdate();    // launch date of the job
     adiak::libraries();     // Libraries used
