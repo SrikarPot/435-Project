@@ -57,14 +57,14 @@ int main(int argc, char *argv[]) {
     n = atoi(argv[1]); // Change this to your desired array size
     float *arr ;
     int local_n;
-
+    std::string input_type = argv[2];
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if (rank == 0) {
         arr =(float *)malloc(n * sizeof(int));
-        array_fill(arr, n);
+        array_fill(arr, n, input_type);
     }
 
     for(int subarr_size = n / size, i = 1; subarr_size <= n; subarr_size <<=1, i <<=1) {
@@ -89,6 +89,22 @@ int main(int argc, char *argv[]) {
         array_print(arr,n);
         free(arr);
     }
+    adiak::init(NULL);
+    adiak::launchdate();    // launch date of the job
+    adiak::libraries();     // Libraries used
+    adiak::cmdline();       // Command line used to launch the job
+    adiak::clustername();   // Name of the cluster
+    adiak::value("Algorithm", "MergeSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
+    adiak::value("ProgrammingModel", "MPI"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
+    adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
+    adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
+    adiak::value("InputType", (char*)input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    adiak::value("num_procs", ); // The number of processors (MPI ranks)
+    // adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
+    // adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
+    adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("implementation_source", "ONLINE"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
     MPI_Finalize();
     return 0;
