@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/enumeration.dir/enumeration.cu.o"
-  "CMakeFiles/enumeration.dir/enumeration.cu.o.d"
-  "enumeration"
+  "CMakeFiles/enumeration.dir/cmake_device_link.o"
   "enumeration.pdb"
+  "enumeration"
 )
 
 # Per-language clean rules from dependency scanning.

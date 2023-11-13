@@ -1,8 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/oddeven.dir/oddeven.cpp.o"
-  "CMakeFiles/oddeven.dir/oddeven.cpp.o.d"
-  "oddeven"
   "oddeven.pdb"
+  "oddeven"
 )
 
 # Per-language clean rules from dependency scanning.

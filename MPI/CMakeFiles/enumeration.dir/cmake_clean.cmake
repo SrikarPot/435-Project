@@ -1,8 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/enumeration.dir/enumeration.cpp.o"
-  "CMakeFiles/enumeration.dir/enumeration.cpp.o.d"
-  "enumeration"
   "enumeration.pdb"
+  "enumeration"
 )
 
 # Per-language clean rules from dependency scanning.

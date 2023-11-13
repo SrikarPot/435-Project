@@ -32,9 +32,6 @@ float bitonic_sort_step_time;
 float cudaMemcpy_host_to_device_time;
 float cudaMemcpy_device_to_host_time;
 
-
-
-
 __device__ void merge(float* values, float* temp, int l, int m, int r)  {
   int i = l;
   int j = m;
@@ -85,8 +82,8 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
 /**
  * Inplace merge sort using CUDA.
  */
-void merge_sort_caller(float *values)
-{
+  void merge_sort_caller(float *values)
+`{
   float *dev_values, *temp;
   int size = NUM_VALS * sizeof(float);
   CALI_MARK_BEGIN("comm");
@@ -151,23 +148,9 @@ int main(int argc, char *argv[])
 //   printf("bitonic_sort_step_time: %f\n", bitonic_sort_step_time/1000);
 //   printf("effective_bandwitdth_gb_s: %f\n", effective_bandwidth_gb_s);
 
-//   adiak::init(NULL);
-//   adiak::user();
-//   adiak::launchdate();
-//   adiak::libraries();
-//   adiak::cmdline();
-//   adiak::clustername();
-//   adiak::value("num_threads", THREADS);
-//   adiak::value("num_blocks", BLOCKS);
-//   adiak::value("num_vals", NUM_VALS);
-//   adiak::value("program_name", "cuda_bitonic_sort");
-//   adiak::value("datatype_size", sizeof(float));
-//   adiak::value("effective_bandwidth (GB/s)", effective_bandwidth_gb_s);
-//   adiak::value("bitonic_sort_step_time", bitonic_sort_step_time);
-//   adiak::value("cudaMemcpy_host_to_device_time", cudaMemcpy_host_to_device_time);
-//   adiak::value("cudaMemcpy_device_to_host_time", cudaMemcpy_device_to_host_time);
+
   CALI_MARK_END("main");
-  adiak::init(NULL);
+    adiak::init(NULL);
     adiak::launchdate();    // launch date of the job
     adiak::libraries();     // Libraries used
     adiak::cmdline();       // Command line used to launch the job

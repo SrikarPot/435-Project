@@ -1,8 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/bitonic.dir/bitonic.cpp.o"
-  "CMakeFiles/bitonic.dir/bitonic.cpp.o.d"
-  "bitonic"
   "bitonic.pdb"
+  "bitonic"
 )
 
 # Per-language clean rules from dependency scanning.
