@@ -1,6 +1,0 @@
-/home/aurkorouth/435-Project/build/CMakeFiles/edit_cache.dir
-/home/aurkorouth/435-Project/build/CMakeFiles/enumeration.dir
-/home/aurkorouth/435-Project/build/CMakeFiles/oddeven.dir
-/home/aurkorouth/435-Project/build/CMakeFiles/merge.dir
-/home/aurkorouth/435-Project/build/CMakeFiles/rebuild_cache.dir
-/home/aurkorouth/435-Project/build/CMakeFiles/bitonic.dir

@@ -17,10 +17,6 @@ void merge(float* values, float* temp, int l, int m, int r)  {
   int j = m+1;
   int k = l;
 
-  if(rank == 0) {
-    printf("%d %d %d\n", l, m, r);
-  }
-
   while(i <= m && j <= r) {
     if(values[i] > values[j])
       temp[k++] = values[j++];
@@ -43,11 +39,6 @@ void merge(float* values, float* temp, int l, int m, int r)  {
   for(i = l; i <= r; i++) {
     values[i] = temp[i];
   }
-
-      if(rank == 0) {
-        //array_print(temp, n);
-        array_print(values, n);
-     }
 }
 
 
@@ -58,8 +49,6 @@ void mergeSort(float* values, float* temp, int l, int r) {
         mergeSort(values, temp, l, m);
         mergeSort(values, temp, m + 1, r);
         merge(values, temp, l, m, r);
-        printf("--------------\n");
-        array_print(values, n);
     }
 }
 
@@ -76,45 +65,30 @@ int main(int argc, char *argv[]) {
     if (rank == 0) {
         arr =(float *)malloc(n * sizeof(int));
         array_fill(arr, n);
- //       array_print(arr,n);
     }
 
-    local_n = n / size;
-    loc = local_n;
-    float *local_arr = (float *)malloc(local_n * sizeof(int));
-    float *temp = (float*)malloc(local_n*sizeof(int));
-
-    MPI_Scatter(arr, local_n, MPI_INT, local_arr, local_n, MPI_INT, 0, MPI_COMM_WORLD);
-  //  array_print(local_arr, local_n);
-      // if(rank == 1)
-      //   array_print(local_arr, local_n);
-    mergeSort(local_arr, temp, 0, local_n - 1);
-    // if(rank == 1)
-    //    array_print(local_arr, local_n);
-
-    float *sorted = NULL;
-    if (rank == 0) {
-        sorted = (float *)malloc(n * sizeof(float));
+    for(int subarr_size = n / size; subarr_size <= n; subarr_size <<=1) {
+        MPI_Comm custom_comm;
+        MPI_Comm_split(MPI_COMM_WORLD, (rank % subarr_size == 0) ? 1 : MPI_UNDEFINED, rank, &custom_comm);
+        if(rank % subarr_size == 0) {
+            int custom_rank;
+            MPI_Comm_rank(custom_comm, &custom_rank);
+            float *local_arr = (float*)malloc(subarr_size * sizeof(float));
+            float *temp = (float*)malloc(subarr_size * sizeof(float));
+            MPI_Scatter(arr, subarr_size, MPI_FLOAT, local_arr, subarr_size, MPI_FLOAT, 0, custom_comm);
+            mergeSort(local_arr, temp, 0, subarr_size-1);
+            MPI_Gather(arr, subarr_size, MPI_FLOAT, local_arr, subarr_size, MPI_FLOAT, 0, custom_comm);
+            free(local_arr);
+            free(temp);
+        }
     }
 
-    MPI_Gather(local_arr, local_n, MPI_INT, sorted, local_n, MPI_INT, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
-        float* glob_temp = (float *)malloc(n * sizeof(float));
-        array_print(sorted, n);
-  //      printf("---------------\n");
-        mergeSort(sorted, glob_temp, 0, n - 1);
-
-    //    printf("final:\n");
-        array_print(sorted,n);
-
-        free(sorted);
+        array_print(arr,n);
         free(arr);
-        free(glob_temp);
     }
 
-    free(local_arr);
-    free(temp);
     MPI_Finalize();
     return 0;
 }
