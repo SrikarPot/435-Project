@@ -22,6 +22,7 @@ void bitonicMerge(float* arr, int start, int length, int dir) {
     }
 }
 
+
 void bitonicSort(float* arr, int start, int length, int dir) {
     if (length > 1) {
         int k = length / 2;
@@ -39,7 +40,7 @@ int main(int argc, char** argv) {
 
     int n = std::atoi(argv[1]);
     int processors = numProcs;
-
+    
     // Broadcast user input to all processes
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&processors, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -75,13 +76,8 @@ int main(int argc, char** argv) {
     if (rank == 0) {
         // Generate a random array of size n
         std::srand(static_cast<unsigned int>(time(0)));
-        float* globalArray = new float[n];
+        float* globalArray = (float*) malloc( n * sizeof(float));
         array_fill(globalArray, n, "Random");
-        // Print the initial array
-        for (int i = 0; i < n; i++) {
-            std::cout << globalArray[i] << " ";
-        }
-        std::cout << std::endl;
 
         // Scatter the global array to local arrays
         MPI_Scatter(globalArray, elementsPerProc, MPI_FLOAT, localArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
@@ -104,23 +100,21 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Gather the sorted local arrays back to the global array
+    
     if (rank == 0) {
-        float* sortedArray = new float[n];
+        // Gather the sorted local arrays back to the global array
+        float* sortedArray = (float*) malloc( n * sizeof(float));
         MPI_Gather(localArray, elementsPerProc, MPI_FLOAT, sortedArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
-
+        
         // Merge the sorted subarrays to get the final sorted array
-        for (int step = processors / 2; step > 0; step /= 2) {
-            for (int i = 0; i < n; i += elementsPerProc) {
-                bitonicMerge(sortedArray, i, elementsPerProc, (i / (n / step)) % 2);
-            }
-        }
+        bitonicSort(sortedArray, 0, n, 1);
 
-        // Print the final sorted array
-        for (int i = 0; i < n; i++) {
-            std::cout << sortedArray[i] << " ";
+        
+        if (correctness_check(sortedArray, n) == 1) {
+            std::cout << "Sorted Correctly!" << std::endl;
+        } else {
+            std::cout << "Did not sort correctly." << std::endl;
         }
-        std::cout << std::endl;
 
         delete[] sortedArray;
     } else {
