@@ -51,11 +51,11 @@ __global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
 }
 
 // Helper function to swap two integers
-__device__ void swap(int &a, int &b) {
-    int temp = a;
-    a = b;
-    b = temp;
-}
+// __device__ void swap(int &a, int &b) {
+//     int temp = a;
+//     a = b;
+//     b = temp;
+// }
 
 // CUDA kernel for sorting the array based on ranks
 __global__ void sortArray(float *array, float *sorted_array, int *rank, int n, int THREADS) {
@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
     THREADS = atoi(argv[1]);
     NUM_VALS = atoi(argv[2]);
     BLOCKS = NUM_VALS / THREADS;
+    std::string input_type = argv[3];
 
     printf("Number of threads: %d\n", THREADS);
     printf("Number of values: %d\n", NUM_VALS);
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
     // Create caliper ConfigManager object
     cali::ConfigManager mgr;
     mgr.start();
-
+    CALI_MARK_BEGIN("data_init")
 
     const int n = NUM_VALS; // Size of the array
     float *h_array = new float[n];
@@ -90,15 +91,15 @@ int main(int argc, char *argv[])
     float *sorted_array = new float[n];
 
     // Initialize the array with random values
-    array_fill(h_array, n);
+    array_fill(h_array, n, input_type);
     
 
     // Print the og array
-    std::cout << "Original Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << h_array[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Original Array: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << h_array[i] << " ";
+    // }
+    // std::cout << std::endl;
 
     // Device arrays
     float *d_array, *sorted_array_device;
@@ -106,13 +107,14 @@ int main(int argc, char *argv[])
     cudaMalloc((void**)&d_array, sizeof(float) * n);
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
     cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
+    CALI_MARK_END("data_init")
 
     CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_large");
-
+    CALI_MARK_BEGIN("cudaMemcpy");
     // Copy data from host to device
     cudaMemcpy(d_array, h_array, sizeof(float) * n, cudaMemcpyHostToDevice);
-
+    CALI_MARK_END("cudaMemcpy");
     CALI_MARK_END("comm_large");
     CALI_MARK_END("comm");
 
@@ -154,11 +156,11 @@ int main(int argc, char *argv[])
     // }
 
     // Print the sorted array
-    std::cout << "Sorted Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << sorted_array[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Sorted Array: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << sorted_array[i] << " ";
+    // }
+    // std::cout << std::endl;
  
     // Clean up
     delete[] h_array;
@@ -168,6 +170,7 @@ int main(int argc, char *argv[])
     cudaFree(d_rank);
     cudaFree(sorted_array_device);
 
+    CALI_MARK_END("main");
 
 
     adiak::init(NULL);
@@ -180,7 +183,7 @@ int main(int argc, char *argv[])
     adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
     adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
     adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
-    adiak::value("InputType", "Sorted"); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    adiak::value("InputType", input_type); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
     // adiak::value("num_procs", ); // The number of processors (MPI ranks)
     adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
     adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
@@ -190,7 +193,7 @@ int main(int argc, char *argv[])
 
 
 //   print_elapsed(start, stop);
-  CALI_MARK_END("main");
+  
 
   // Flush Caliper output before finalizing MPI
   mgr.stop();

@@ -34,8 +34,11 @@ int NUM_VALS;
 int main (int argc, char *argv[])
 {
 CALI_CXX_MARK_FUNCTION;
-
-    
+// Create caliper ConfigManager object
+cali::ConfigManager mgr;
+mgr.start();
+CALI_MARK_BEGIN("main");
+CALI_MARK_BEGIN("data_init");
 NUM_VALS = atoi(argv[1]);
 std::string input_type = argv[2];
 
@@ -84,14 +87,11 @@ float sorted_array[NUM_VALS];
 
 
 // WHOLE PROGRAM COMPUTATION PART STARTS HERE
-double total_time_start = MPI_Wtime();
+// double total_time_start = MPI_Wtime();
 // CALI_MARK_BEGIN(whole_computation);
 
-// Create caliper ConfigManager object
-cali::ConfigManager mgr;
-mgr.start();
-CALI_MARK_BEGIN("main");
 
+CALI_MARK_END("data_init");
 /**************************** master task ************************************/
    if (taskid == MASTER)
    {
@@ -99,11 +99,9 @@ CALI_MARK_BEGIN("main");
         // INITIALIZATION PART FOR THE MASTER PROCESS STARTS HERE
             // printf("mpi_mm has started with %d tasks.\n",numtasks);
             // printf("Initializing arrays...\n");
-
+            CALI_MARK_BEGIN("data_init");
             const int n = NUM_VALS;
             float *h_array;
-
-            CALI_MARK_BEGIN("data_init");
             h_array = (float*)malloc(n * sizeof(float));
             array_fill(h_array, n, input_type);
             CALI_MARK_END("data_init");
