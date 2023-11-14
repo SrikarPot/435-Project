@@ -156,8 +156,8 @@ mgr.start();
             CALI_MARK_BEGIN("comp");
             CALI_MARK_BEGIN("comp_small");
             for (int i = 0; i < calculations_per_worker; i++){
-                std::cout << "master rank_idx: " << rank_idx[i] << std::endl;
-                std::cout << "master rank: " << rank[i] << std::endl;
+                std::cout << "index: " << rank_idx[i] << " ";
+                std::cout << "is rank: " << rank[i] << std::endl;
                 sorted_array[rank[i]] = h_array[rank_idx[i]];
             }
             CALI_MARK_END("comp_small");
@@ -176,6 +176,8 @@ mgr.start();
 
                 for (int i = 0; i < calculations_per_worker; i++){
                     sorted_array[rank[i]] = h_array[rank_idx[i]];
+                    std::cout << "index: " << rank_idx[i] << " ";
+                    std::cout << "is rank: " << rank[i] << std::endl;
                 }
 
                 printf("Received results from task %d\n",source);
@@ -209,7 +211,7 @@ mgr.start();
    {
       //RECEIVING PART FOR WORKER PROCESS STARTS HERE
         MPI_Bcast(received_data, NUM_VALS, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
-        printf("worker recieved array");
+        // printf("worker recieved array");
         
       //RECEIVING PART FOR WORKER PROCESS ENDS HERE
       
