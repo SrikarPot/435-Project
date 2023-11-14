@@ -194,7 +194,7 @@ mgr.start();
         std::cout << std::endl;
       
         CALI_MARK_BEGIN("correctness_check");
-        if (correctness_check(h_array, n)) {
+        if (correctness_check(sorted_array, n)) {
             printf("Array correctly sorted!\n");
         } else {
             printf("Array sorting failed\n");
