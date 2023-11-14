@@ -43,7 +43,7 @@ NUM_VALS = atoi(argv[1]);
 
 int	numtasks,              /* number of tasks in partition */
 	taskid,                /* a task identifier */
-	numworkers,            /* number of worker tasks */
+	numworkers_inc_master,            /* number of worker tasks */
 	source,                /* task id of message source */
 	dest,                  /* task id of message destination */
 	mtype,                 /* message type */
@@ -74,9 +74,9 @@ if (numtasks < 2 ) {
   MPI_Abort(MPI_COMM_WORLD, rc);
   exit(1);
   }
-numworkers = numtasks-1;
+numworkers_inc_master = numtasks;
 
-int calculations_per_worker = NUM_VALS / numworkers;
+int calculations_per_worker = NUM_VALS / numworkers_inc_master;
 int rank[calculations_per_worker];
 int rank_idx[calculations_per_worker];
 float received_data[NUM_VALS];
@@ -137,17 +137,41 @@ double total_time_start = MPI_Wtime();
         /* Send matrix data to the worker tasks */
         
         mtype = FROM_MASTER;
-        numworkers = THREADS;
         printf("Sending array to tasks");
-        for (dest=1; dest<=numworkers; dest++)
-        {
-            MPI_Send(h_array, NUM_VALS, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-            printf("Sent array to tasks%d\n",dest);
+        // for (dest=1; dest<numworkers_inc_master; dest++)
+        // {
+        //     MPI_Send(h_array, NUM_VALS, MPI_INT, dest, mtype, MPI_COMM_WORLD);
+        //     printf("Sent array to tasks%d\n",dest);
+        // }
+
+        MPI_Bcast(h_array, NUM_VALS, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
+        printf("Sent array to all tasks");
+
+        /* Do master thread calculations */
+
+        int count = 0;
+        for(int i = taskid; i < NUM_VALS; i += numworkers_inc_master){
+            
+            if (i < NUM_VALS) {
+                rank[count] = 0;
+                rank_idx[count] = i;
+                for (int j = 0; j < NUM_VALS; j++) {
+                    if (received_data[j] < received_data[i] || (received_data[j] == received_data[i] && j < i)) {
+                        rank[count]++;
+                    }
+                }
+            }
+            count++;
         }
+
+        for (int i = 0; i < calculations_per_worker; i++){
+            sorted_array[rank[i]] = h_array[rank_idx[i]];
+        }
+
 
         /* Receive results from worker tasks */
         mtype = FROM_WORKER;
-        for (source=1; source<=numworkers; source++)
+        for (source=1; source<numworkers_inc_master; source++)
         {
             MPI_Recv(&rank, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
             MPI_Recv(&rank_idx, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
@@ -176,8 +200,10 @@ double total_time_start = MPI_Wtime();
    if (taskid > MASTER)
    {
       //RECEIVING PART FOR WORKER PROCESS STARTS HERE
-        mtype = FROM_MASTER;
-        MPI_Recv(received_data, NUM_VALS, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
+        // mtype = FROM_MASTER;
+        // MPI_Recv(received_data, NUM_VALS, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
+        MPI_Bcast(received_data, NUM_VALS, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
+        printf("worker recieved array");
         
       //RECEIVING PART FOR WORKER PROCESS ENDS HERE
       
@@ -185,7 +211,7 @@ double total_time_start = MPI_Wtime();
       //CALCULATION PART FOR WORKER PROCESS STARTS HERE
 
         int count = 0;
-        for(int i = (taskid - 1); i < NUM_VALS; i += numworkers){
+        for(int i = taskid; i < NUM_VALS; i += numworkers_inc_master){
             
             if (i < NUM_VALS) {
                 rank[count] = 0;
