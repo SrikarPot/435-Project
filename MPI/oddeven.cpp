@@ -17,7 +17,7 @@
 using namespace std;
 
 
-
+int world_rank, world_size;
 
 void Merge_low(float local_A[], const float temp_B[], float temp_C[], int local_n) {
     int ai, bi, ci;
@@ -135,15 +135,15 @@ void Sort(float local_A[], int local_n, int my_rank, int p, MPI_Comm comm) {
 }
 
 int main(int argc, char** argv) {
+    CALI_MARK_BEGIN("main");
     MPI_Init(&argc, &argv);
 
-    int world_rank, world_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    if (argc != 2) {
+    if (argc != 3) {
         if (world_rank == 0) {
-            std::cerr << "Usage: mpirun -np <num_processes> ./executable <num_values>\n";
+            std::cerr << "Usage: mpirun -np <num_processes> ./executable <num_values> <input_type>\n";
         }
         MPI_Finalize();
         return 1;
@@ -151,37 +151,94 @@ int main(int argc, char** argv) {
 
     int num_values = std::stoi(argv[1]);
     int local_n = num_values / world_size; // Assuming num_values is divisible by world_size
+    std::string input_type = argv[2];
+
 
     // Allocate memory for the full array only on the root process
     float *arr = nullptr;
     if (world_rank == 0) {
+        CALI_MARK_BEGIN("data_init");
         arr = new float[num_values];
-        array_fill(arr, num_values, "Random");
-        array_print(arr, num_values);
+        array_fill(arr, num_values, input_type);
+        // array_print(arr, local_n);
+        CALI_MARK_END("data_init");
     }
 
     // Allocate memory for the local array on all processes
     float *local_arr = new float[local_n];
 
     // Scatter the data from the root process to all processes
+    CALI_MARK_BEGIN("comm");
+    CALI_MARK_BEGIN("comm_large");
+    CALI_MARK_BEGIN("MPI_Scatter");
     MPI_Scatter(arr, local_n, MPI_FLOAT, local_arr, local_n, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    CALI_MARK_END("MPI_Scatter");
+    CALI_MARK_END("comm_large");
+    CALI_MARK_END("comm");
 
     // Sort the local arrays
+    CALI_MARK_BEGIN("comm");
+    CALI_MARK_BEGIN("comm_small");
     std::sort(local_arr, local_arr + local_n);
+    CALI_MARK_END("comm_small");
+    CALI_MARK_END("comm");
 
     // Perform the parallel sort
+    CALI_MARK_BEGIN("comp");
+    CALI_MARK_BEGIN("comp_large");
     Sort(local_arr, local_n, world_rank, world_size, MPI_COMM_WORLD);
+    CALI_MARK_END("comp_large");
+    CALI_MARK_END("comp");
 
     // Gather the sorted subarrays into the root array
+    CALI_MARK_BEGIN("comm");
+    CALI_MARK_BEGIN("comm_large");
+    CALI_MARK_BEGIN("MPI_Gather");
     MPI_Gather(local_arr, local_n, MPI_FLOAT, arr, local_n, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    CALI_MARK_END("MPI_Gather");
+    CALI_MARK_END("comm_large");
+    CALI_MARK_END("comm");
 
     // Print the sorted array on the root process
-    if (world_rank == 0) {
-        array_print(arr, num_values);
+    if (world_rank == 0) 
+    {
+        CALI_MARK_BEGIN("correctness_check");
+
+        if(correctness_check(arr, local_n)) 
+        {
+          printf("Array correctly sorted!\n");
+        } 
+
+        else 
+        {
+          printf("Array sorting failed\n");
+        }
+
+        CALI_MARK_END("correctness_check");
         delete[] arr;
     }
 
     delete[] local_arr;
+
+    CALI_MARK_END("main");
+    
+    adiak::init(NULL);
+    adiak::launchdate();    // launch date of the job
+    adiak::libraries();     // Libraries used
+    adiak::cmdline();       // Command line used to launch the job
+    adiak::clustername();   // Name of the cluster
+    adiak::value("Algorithm", "OddEvenTranspositionSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
+    adiak::value("ProgrammingModel", "MPI"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
+    adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
+    adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("InputSize", local_n); // The number of elements in input dataset (1000)
+    adiak::value("InputType", (char*)input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    adiak::value("num_procs", world_size); // The number of processors (MPI ranks)
+    // adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
+    // adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
+    adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("implementation_source", "ONLINE"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
+    
     MPI_Finalize();
     return 0;
 }
