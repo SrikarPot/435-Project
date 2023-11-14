@@ -177,11 +177,11 @@ int main(int argc, char** argv) {
     CALI_MARK_END("comm");
 
     // Sort the local arrays
-    CALI_MARK_BEGIN("comm");
-    CALI_MARK_BEGIN("comm_small");
+    CALI_MARK_BEGIN("comp");
+    CALI_MARK_BEGIN("comp_small");
     std::sort(local_arr, local_arr + local_n);
-    CALI_MARK_END("comm_small");
-    CALI_MARK_END("comm");
+    CALI_MARK_END("comp_small");
+    CALI_MARK_END("comp");
 
     // Perform the parallel sort
     CALI_MARK_BEGIN("comp");
