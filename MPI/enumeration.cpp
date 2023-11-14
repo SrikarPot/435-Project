@@ -147,6 +147,7 @@ mgr.start();
                         }
                     }
                 }
+                
                 count++;
             }
             CALI_MARK_END("comp_large");
@@ -155,6 +156,8 @@ mgr.start();
             CALI_MARK_BEGIN("comp");
             CALI_MARK_BEGIN("comp_small");
             for (int i = 0; i < calculations_per_worker; i++){
+                std::cout << "master rank_idx: " << rank_idx[i] << std::endl;
+                std::cout << "master rank: " << rank[i] << std::endl;
                 sorted_array[rank[i]] = h_array[rank_idx[i]];
             }
             CALI_MARK_END("comp_small");
