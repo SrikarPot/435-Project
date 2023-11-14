@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
   // CALI_MARK_BEGIN("data_init");
   // data_init(h_a, N);
   array_fill(values, NUM_VALS, input_type);
-  array_print(values, NUM_VALS);
+  // array_print(values, NUM_VALS);
 
   cali::ConfigManager mgr;
   mgr.start();
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
   CALI_MARK_END("correctness_check");
 
 
-    array_print(values, NUM_VALS);
+    //array_print(values, NUM_VALS);
     CALI_MARK_END("main");
     adiak::init(NULL);
     adiak::launchdate();    // launch date of the job
