@@ -7,57 +7,45 @@
 #include "../helper.h"
 
 int rank, size;
-int n,loc;
-void merge(float* values, float* temp, int l, int m, int r)  {
+int n, loc;
 
-  if(values[m] <= values[m+1]) return; // subarrays already sorted
+void bitonicMerge(float* values, int l, int r, int step, int dir) {
+    if (step > 0) {
+        int k = step / 2;
 
+        for (int i = l; i < r - k; ++i) {
+            if ((i & step) == 0 && ((values[i] > values[i + k] && dir == 1) || (values[i] < values[i + k] && dir == 0))) {
+                float temp = values[i];
+                values[i] = values[i + k];
+                values[i + k] = temp;
+            }
+        }
 
-  int i = l;
-  int j = m+1;
-  int k = l;
+        MPI_Barrier(MPI_COMM_WORLD);
 
-  while(i <= m && j <= r) {
-    if(values[i] > values[j])
-      temp[k++] = values[j++];
-    else
-      temp[k++] = values[i++];
-  }
-
-  // add left over values from first half
-  while(i <= m) {
-    temp[k++] = values[i++];
-  }
-
-  //add left over values from second half
-  while(j <= r) {
-    temp[k++] = values[j++];
-  }
-
-
-  // copy over to main array
-  for(i = l; i <= r; i++) {
-    values[i] = temp[i];
-  }
+        bitonicMerge(values, l, l + k, k, dir);
+        bitonicMerge(values, l + k, r, k, dir);
+    }
 }
 
+void bitonicSort(float* values, int l, int r, int step, int dir) {
+    if (step > 0) {
+        int k = step / 2;
 
-void mergeSort(float* values, float* temp, int l, int r) {
-    if (l < r) {
-        int m = l + (r - l) / 2;
+        bitonicSort(values, l, l + k, k, 1);  // bitonic sort on ascending order
+        bitonicSort(values, l + k, r, k, 0);  // bitonic sort on descending order
 
-        mergeSort(values, temp, l, m);
-        mergeSort(values, temp, m + 1, r);
-        merge(values, temp, l, m, r);
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        bitonicMerge(values, l, r, step, dir);
     }
 }
 
 int main(int argc, char *argv[]) {
-  //  int rank, size;
     CALI_MARK_BEGIN("main");
 
     n = atoi(argv[1]); // Change this to your desired array size
-    float *arr ;
+    float *arr;
     int local_n;
     std::string input_type = argv[2];
     MPI_Init(&argc, &argv);
@@ -66,20 +54,20 @@ int main(int argc, char *argv[]) {
 
     if (rank == 0) {
         CALI_MARK_BEGIN("data_init");
-        arr =(float *)malloc(n * sizeof(int));
+        arr = (float*)malloc(n * sizeof(float));
         array_fill(arr, n, input_type);
         CALI_MARK_END("data_init");
     }
 
-    for(int subarr_size = n / size, i = 1; subarr_size <= n; subarr_size <<=1, i <<=1) {
+    for (int subarr_size = n / size, i = 1; subarr_size <= n; subarr_size <<= 1, i <<= 1) {
         MPI_Comm custom_comm;
         MPI_Comm_split(MPI_COMM_WORLD, (rank % i == 0) ? 1 : MPI_UNDEFINED, rank, &custom_comm);
-        if(rank % i == 0) {
+        if (rank % i == 0) {
             int custom_rank;
-            
+
             MPI_Comm_rank(custom_comm, &custom_rank);
             float *local_arr = (float*)malloc(subarr_size * sizeof(float));
-            float *temp = (float*)malloc(subarr_size * sizeof(float));
+
             CALI_MARK_BEGIN("comm");
             CALI_MARK_BEGIN("comm_large");
             CALI_MARK_BEGIN("MPI_Scatter");
@@ -90,10 +78,9 @@ int main(int argc, char *argv[]) {
 
             CALI_MARK_BEGIN("comp");
             CALI_MARK_BEGIN("comp_large");
-            mergeSort(local_arr, temp, 0, subarr_size-1);
+            bitonicSort(local_arr, 0, subarr_size, subarr_size, 1); // initial direction is ascending
             CALI_MARK_END("comp_large");
             CALI_MARK_END("comp");
-
 
             CALI_MARK_BEGIN("comm");
             CALI_MARK_BEGIN("comm_large");
@@ -102,19 +89,17 @@ int main(int argc, char *argv[]) {
             CALI_MARK_END("MPI_Gather");
             CALI_MARK_END("comm_large");
             CALI_MARK_END("comm");
-            free(local_arr);
-            free(temp);
-        }
-        // MPI_Comm_free(&custom_comm);
-    }
 
+            free(local_arr);
+        }
+    }
 
     if (rank == 0) {
         CALI_MARK_BEGIN("correctness_check");
-        if(correctness_check(arr, n)) {
-          printf("Array correctly sorted!\n");
+        if (correctness_check(arr, n)) {
+            printf("Array correctly sorted!\n");
         } else {
-          printf("Array sorting failed\n");
+            printf("Array sorting failed\n");
         }
         CALI_MARK_END("correctness_check");
         free(arr);
@@ -126,7 +111,7 @@ int main(int argc, char *argv[]) {
     adiak::libraries();     // Libraries used
     adiak::cmdline();       // Command line used to launch the job
     adiak::clustername();   // Name of the cluster
-    adiak::value("Algorithm", "MergeSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
+    adiak::value("Algorithm", "BitonicSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
     adiak::value("ProgrammingModel", "MPI"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
     adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
     adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
