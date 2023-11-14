@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
         CALI_MARK_BEGIN("data_init");
         arr = new float[num_values];
         array_fill(arr, num_values, input_type);
-        // array_print(arr, local_n);
+        // array_print(arr, num_values);
         CALI_MARK_END("data_init");
     }
 
@@ -206,12 +206,15 @@ int main(int argc, char** argv) {
 
         if(correctness_check(arr, local_n)) 
         {
+
           printf("Array correctly sorted!\n");
+           // array_print(arr, num_values);
         } 
 
         else 
         {
           printf("Array sorting failed\n");
+          // array_print(arr, num_values);
         }
 
         CALI_MARK_END("correctness_check");
