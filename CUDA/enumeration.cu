@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     // Create caliper ConfigManager object
     cali::ConfigManager mgr;
     mgr.start();
-    CALI_MARK_BEGIN("data_init")
+    CALI_MARK_BEGIN("data_init");
 
     const int n = NUM_VALS; // Size of the array
     float *h_array = new float[n];
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
     cudaMalloc((void**)&d_array, sizeof(float) * n);
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
     cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
-    CALI_MARK_END("data_init")
+    CALI_MARK_END("data_init");
 
     CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_large");

@@ -117,7 +117,7 @@ CALI_MARK_END("data_init");
         //SEND ARRAY DATA PART FOR THE MASTER PROCESS STARTS HERE
             /* Send matrix data to the worker tasks */
             mtype = FROM_MASTER;
-            printf("Sending array to tasks");
+            // printf("Sending array to tasks");
 
             CALI_MARK_BEGIN("comm");
             CALI_MARK_BEGIN("comm_large");
