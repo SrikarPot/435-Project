@@ -34,6 +34,7 @@ int NUM_VALS;
 int main (int argc, char *argv[])
 {
 CALI_CXX_MARK_FUNCTION;
+
     
 NUM_VALS = atoi(argv[1]);
 std::string input_type = argv[2];
@@ -89,14 +90,15 @@ double total_time_start = MPI_Wtime();
 // Create caliper ConfigManager object
 cali::ConfigManager mgr;
 mgr.start();
+CALI_MARK_BEGIN("main");
 
 /**************************** master task ************************************/
    if (taskid == MASTER)
    {
    
         // INITIALIZATION PART FOR THE MASTER PROCESS STARTS HERE
-            printf("mpi_mm has started with %d tasks.\n",numtasks);
-            printf("Initializing arrays...\n");
+            // printf("mpi_mm has started with %d tasks.\n",numtasks);
+            // printf("Initializing arrays...\n");
 
             const int n = NUM_VALS;
             float *h_array;
@@ -127,7 +129,7 @@ mgr.start();
             CALI_MARK_END("comm_large");
             CALI_MARK_END("comm");
 
-            printf("Sent array to all tasks");
+            // printf("Sent array to all tasks");
 
         //SEND ARRAY DATA PART FOR THE MASTER PROCESS ENDS HERE
 
@@ -151,13 +153,9 @@ mgr.start();
                 count++;
             }
             CALI_MARK_END("comp_large");
-            CALI_MARK_END("comp");
 
-            CALI_MARK_BEGIN("comp");
             CALI_MARK_BEGIN("comp_small");
             for (int i = 0; i < calculations_per_worker; i++){
-                // std::cout << "index: " << rank_idx[i] << " ";
-                // std::cout << "is rank: " << rank[i] << std::endl;
                 sorted_array[rank[i]] = h_array[rank_idx[i]];
             }
             CALI_MARK_END("comp_small");
@@ -176,12 +174,7 @@ mgr.start();
 
                 for (int i = 0; i < calculations_per_worker; i++){
                     sorted_array[rank[i]] = h_array[rank_idx[i]];
-                    // std::cout << "index: " << rank_idx[i] << " ";
-                    // std::cout << "is rank: " << rank[i] << std::endl;
                 }
-
-                printf("Received results from task %d\n",source);
-                std::cout << std::endl;
             }
             CALI_MARK_END("MPI_Recv");
             CALI_MARK_END("comm_large");
@@ -210,7 +203,13 @@ mgr.start();
    if (taskid > MASTER)
    {
       //RECEIVING PART FOR WORKER PROCESS STARTS HERE
+        CALI_MARK_BEGIN("comm");
+        CALI_MARK_BEGIN("comm_large");
+        CALI_MARK_BEGIN("MPI_Bcast");
         MPI_Bcast(received_data, NUM_VALS, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
+        CALI_MARK_END("MPI_Bcast");
+        CALI_MARK_END("comm_large");
+        CALI_MARK_END("comm");
         // printf("worker recieved array");
         
       //RECEIVING PART FOR WORKER PROCESS ENDS HERE
@@ -219,6 +218,8 @@ mgr.start();
       //CALCULATION PART FOR WORKER PROCESS STARTS HERE
 
         int count = 0;
+        CALI_MARK_BEGIN("comp");
+        CALI_MARK_BEGIN("comp_small");
         for(int i = taskid; i < NUM_VALS; i += numworkers_inc_master){
             
             if (i < NUM_VALS) {
@@ -232,22 +233,31 @@ mgr.start();
             }
             count++;
         }
+        CALI_MARK_END("comp_small");
+        CALI_MARK_END("comp");
          
       //CALCULATION PART FOR WORKER PROCESS ENDS HERE
       
       
       //SENDING PART FOR WORKER PROCESS STARTS HERE
-
+        
         mtype = FROM_WORKER;
+
+        CALI_MARK_BEGIN("comm");
+        CALI_MARK_BEGIN("comm_small");
+        CALI_MARK_BEGIN("MPI_Send");
         MPI_Send(&rank, calculations_per_worker, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
         MPI_Send(&rank_idx, calculations_per_worker, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
+        CALI_MARK_END("MPI_Send");
+        CALI_MARK_END("comm_small");
+        CALI_MARK_END("comm");
 
       //SENDING PART FOR WORKER PROCESS ENDS HERE
 
    }
 
    // WHOLE PROGRAM COMPUTATION PART ENDS HERE
-
+    CALI_MARK_END("main");
 
     adiak::init(NULL);
     adiak::launchdate();    // launch date of the job
@@ -266,7 +276,7 @@ mgr.start();
     adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
     adiak::value("implementation_source", "Handwritten"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
-
+    
    // Flush Caliper output before finalizing MPI
    mgr.stop();
    mgr.flush();
