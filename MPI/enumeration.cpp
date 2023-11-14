@@ -106,6 +106,12 @@ mgr.start();
             array_fill(h_array, n, input_type);
             CALI_MARK_END("data_init");
         //INITIALIZATION PART FOR THE MASTER PROCESS ENDS HERE
+
+        std::cout << "Original Array: ";
+        for (int i = 0; i < n; i++) {
+            std::cout << h_array[i] << " ";
+        }
+        std::cout << std::endl;
       
       
         //SEND ARRAY DATA PART FOR THE MASTER PROCESS STARTS HERE
@@ -170,16 +176,17 @@ mgr.start();
                 }
 
                 printf("Received results from task %d\n",source);
+                std::cout << std::endl;
             }
             CALI_MARK_END("MPI_Recv");
             CALI_MARK_END("comm_large");
             CALI_MARK_END("comm");
       
-        // std::cout << "Sorted Array: ";
-        // for (int i = 0; i < n; i++) {
-        //     std::cout << sorted_array[i] << " ";
-        // }
-        // std::cout << std::endl;
+        std::cout << "Sorted Array: ";
+        for (int i = 0; i < n; i++) {
+            std::cout << sorted_array[i] << " ";
+        }
+        std::cout << std::endl;
       
         CALI_MARK_BEGIN("correctness_check");
         if (correctness_check(h_array, n)) {
