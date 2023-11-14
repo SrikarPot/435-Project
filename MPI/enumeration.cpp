@@ -17,6 +17,7 @@
 #include <limits.h>
 #include <iostream>
 #include <ostream>
+#include "../helper.h"
 
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
@@ -28,16 +29,14 @@
 
 int THREADS;
 int NUM_VALS;
-float random_float()
-{
-  return (float)rand()/(float)RAND_MAX;
-}
+
 
 int main (int argc, char *argv[])
 {
-// CALI_CXX_MARK_FUNCTION;
+CALI_CXX_MARK_FUNCTION;
     
 NUM_VALS = atoi(argv[1]);
+std::string input_type = argv[2];
 
 
 
@@ -82,10 +81,6 @@ int rank_idx[calculations_per_worker];
 float received_data[NUM_VALS];
 float sorted_array[NUM_VALS];
 
-int is_master =(taskid == 0) ? 1 : 0;
-
-MPI_Comm worker_comm;
-MPI_Comm_split(MPI_COMM_WORLD, is_master, taskid, &worker_comm);
 
 // WHOLE PROGRAM COMPUTATION PART STARTS HERE
 double total_time_start = MPI_Wtime();
@@ -99,98 +94,100 @@ double total_time_start = MPI_Wtime();
    if (taskid == MASTER)
    {
    
-      // INITIALIZATION PART FOR THE MASTER PROCESS STARTS HERE
+        // INITIALIZATION PART FOR THE MASTER PROCESS STARTS HERE
+            printf("mpi_mm has started with %d tasks.\n",numtasks);
+            printf("Initializing arrays...\n");
 
-        printf("mpi_mm has started with %d tasks.\n",numtasks);
-        printf("Initializing arrays...\n");
+            const int n = NUM_VALS;
 
-
-        // int rank, size;
-        // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        // MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-            const int n = NUM_VALS; // Size of the array
-            float *h_array = new float[n];
-            // float *h_rank = new float[n];
-            
-
-            srand(time(NULL));
-            int i;
-            for (i = 0; i < NUM_VALS; ++i) {
-                h_array[i] = random_float();
-            }
-
-            // Print the og array
-            std::cout << "Original Array: ";
-            for (int i = 0; i < n; i++) {
-                std::cout << h_array[i] << " ";
-            }
-            std::cout << std::endl;
-
-      
-            
-      //INITIALIZATION PART FOR THE MASTER PROCESS ENDS HERE
+            CALI_MARK_BEGIN("data_init");
+            h_array = (float*)malloc(n * sizeof(float));
+            array_fill(h_array, n, input_type);
+            CALI_MARK_END("data_init");
+        //INITIALIZATION PART FOR THE MASTER PROCESS ENDS HERE
       
       
-      //SEND-RECEIVE PART FOR THE MASTER PROCESS STARTS HERE
+        //SEND ARRAY DATA PART FOR THE MASTER PROCESS STARTS HERE
+            /* Send matrix data to the worker tasks */
+            mtype = FROM_MASTER;
+            printf("Sending array to tasks");
+
+            CALI_MARK_BEGIN("comm");
+            CALI_MARK_BEGIN("comm_large");
+            CALI_MARK_BEGIN("MPI_Bcast");
+            MPI_Bcast(h_array, NUM_VALS, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
+            CALI_MARK_END("MPI_Bcast");
+            CALI_MARK_END("comm_large");
+            CALI_MARK_END("comm");
+
+            printf("Sent array to all tasks");
+
+        //SEND ARRAY DATA PART FOR THE MASTER PROCESS ENDS HERE
+
         
-        /* Send matrix data to the worker tasks */
-        
-        mtype = FROM_MASTER;
-        printf("Sending array to tasks");
-        // for (dest=1; dest<numworkers_inc_master; dest++)
-        // {
-        //     MPI_Send(h_array, NUM_VALS, MPI_INT, dest, mtype, MPI_COMM_WORLD);
-        //     printf("Sent array to tasks%d\n",dest);
-        // }
-
-        MPI_Bcast(h_array, NUM_VALS, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
-        printf("Sent array to all tasks");
-
         /* Do master thread calculations */
-
-        int count = 0;
-        for(int i = taskid; i < NUM_VALS; i += numworkers_inc_master){
-            
-            if (i < NUM_VALS) {
-                rank[count] = 0;
-                rank_idx[count] = i;
-                for (int j = 0; j < NUM_VALS; j++) {
-                    if (received_data[j] < received_data[i] || (received_data[j] == received_data[i] && j < i)) {
-                        rank[count]++;
+            int count = 0;
+            CALI_MARK_BEGIN("comp");
+            CALI_MARK_BEGIN("comp_large");
+            for(int i = taskid; i < NUM_VALS; i += numworkers_inc_master){
+                
+                if (i < NUM_VALS) {
+                    rank[count] = 0;
+                    rank_idx[count] = i;
+                    for (int j = 0; j < NUM_VALS; j++) {
+                        if (received_data[j] < received_data[i] || (received_data[j] == received_data[i] && j < i)) {
+                            rank[count]++;
+                        }
                     }
                 }
+                count++;
             }
-            count++;
-        }
+            CALI_MARK_END("comp_large");
+            CALI_MARK_END("comp");
 
-        for (int i = 0; i < calculations_per_worker; i++){
-            sorted_array[rank[i]] = h_array[rank_idx[i]];
-        }
-
-
-        /* Receive results from worker tasks */
-        mtype = FROM_WORKER;
-        for (source=1; source<numworkers_inc_master; source++)
-        {
-            MPI_Recv(&rank, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
-            MPI_Recv(&rank_idx, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
-
+            CALI_MARK_BEGIN("comp");
+            CALI_MARK_BEGIN("comp_small");
             for (int i = 0; i < calculations_per_worker; i++){
                 sorted_array[rank[i]] = h_array[rank_idx[i]];
             }
+            CALI_MARK_END("comp_small");
+            CALI_MARK_END("comp");
 
-            printf("Received results from task %d\n",source);
-        }
+
+        /* Receive results from worker tasks */
+            mtype = FROM_WORKER;
+            CALI_MARK_BEGIN("comm");
+            CALI_MARK_BEGIN("comm_large");
+            CALI_MARK_BEGIN("MPI_Recv");
+            for (source=1; source<numworkers_inc_master; source++)
+            {
+                MPI_Recv(&rank, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
+                MPI_Recv(&rank_idx, calculations_per_worker, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
+
+                for (int i = 0; i < calculations_per_worker; i++){
+                    sorted_array[rank[i]] = h_array[rank_idx[i]];
+                }
+
+                printf("Received results from task %d\n",source);
+            }
+            CALI_MARK_END("MPI_Recv");
+            CALI_MARK_END("comm_large");
+            CALI_MARK_END("comm");
       
-      //SEND-RECEIVE PART FOR THE MASTER PROCESS ENDS HERE
-        std::cout << "Sorted Array: ";
-        for (int i = 0; i < n; i++) {
-            std::cout << sorted_array[i] << " ";
-        }
-        std::cout << std::endl;
+        // std::cout << "Sorted Array: ";
+        // for (int i = 0; i < n; i++) {
+        //     std::cout << sorted_array[i] << " ";
+        // }
+        // std::cout << std::endl;
       
-        delete[] h_array;
+        CALI_MARK_BEGIN("correctness_check");
+        if (correctness_check(h_array, n)) {
+            printf("Array correctly sorted!\n");
+        } else {
+            printf("Array sorting failed\n");
+        }
+        CALI_MARK_END("correctness_check");
+        free(h_array);
       
       
    }
@@ -200,8 +197,6 @@ double total_time_start = MPI_Wtime();
    if (taskid > MASTER)
    {
       //RECEIVING PART FOR WORKER PROCESS STARTS HERE
-        // mtype = FROM_MASTER;
-        // MPI_Recv(received_data, NUM_VALS, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
         MPI_Bcast(received_data, NUM_VALS, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
         printf("worker recieved array");
         
@@ -241,9 +236,27 @@ double total_time_start = MPI_Wtime();
    // WHOLE PROGRAM COMPUTATION PART ENDS HERE
 
 
+    adiak::init(NULL);
+    adiak::launchdate();    // launch date of the job
+    adiak::libraries();     // Libraries used
+    adiak::cmdline();       // Command line used to launch the job
+    adiak::clustername();   // Name of the cluster
+    adiak::value("Algorithm", "EnumerationSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
+    adiak::value("ProgrammingModel", "MPI"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
+    adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
+    adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
+    adiak::value("InputType", (char*)input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    adiak::value("num_procs", numtasks); // The number of processors (MPI ranks)
+    // adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
+    // adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
+    adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("implementation_source", "Handwritten"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
+
+
    // Flush Caliper output before finalizing MPI
-//    mgr.stop();
-//    mgr.flush();
+   mgr.stop();
+   mgr.flush();
 
    MPI_Finalize();
 }
