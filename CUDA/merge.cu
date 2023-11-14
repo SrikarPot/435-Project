@@ -83,15 +83,14 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
 {
   float *dev_values, *temp;
   int size = NUM_VALS * sizeof(float);
-  CALI_MARK_BEGIN("comm");
-  CALI_MARK_BEGIN("comm_large");
-  CALI_MARK_BEGIN("cudaMalloc");
+
   cudaMalloc((void**)&dev_values, size);
   cudaMalloc((void**)&temp, size);
-  CALI_MARK_END("cudaMalloc");
-  CALI_MARK_BEGIN("cudaMemcpyHostToDevice");
+  CALI_MARK_BEGIN("comm");
+  CALI_MARK_BEGIN("comm_large");
+  CALI_MARK_BEGIN("cudaMemcpy");
   cudaMemcpy(dev_values, values, size, cudaMemcpyHostToDevice);
-  CALI_MARK_END("cudaMemcpyHostToDevice");
+  CALI_MARK_END("cudaMemcpy");
   CALI_MARK_END("comm_large");
   CALI_MARK_END("comm");
   
@@ -108,15 +107,14 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
 
   CALI_MARK_BEGIN("comm");
   CALI_MARK_BEGIN("comm_large");
-  CALI_MARK_BEGIN("cudaMemcpyDeviceToHost");
+  CALI_MARK_BEGIN("cudaMemcpy");
   cudaMemcpy(values, dev_values, size, cudaMemcpyDeviceToHost);
-  CALI_MARK_END("cudaMemcpyDeviceToHost");
-  CALI_MARK_BEGIN("cudaFree");
-  cudaFree(dev_values);
-  cudaFree(temp);
-  CALI_MARK_END("cudaFree");
+  CALI_MARK_END("cudaMemcpy");
   CALI_MARK_END("comm_large");
   CALI_MARK_END("comm");
+  cudaFree(dev_values);
+  cudaFree(temp);
+
   
 }
 

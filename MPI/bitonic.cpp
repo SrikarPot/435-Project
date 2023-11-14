@@ -1,127 +1,130 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <algorithm>
 #include <mpi.h>
-#include <caliper/cali.h>
-#include <caliper/cali-manager.h>
-#include <adiak.hpp>
-#include "../helper.h"
+#include "helper.h"
 
-int rank, size;
-int n;
+void compareExchange(float* arr, int i, int j, int dir) {
+    if ((arr[i] > arr[j]) == dir) {
+        std::swap(arr[i], arr[j]);
+    }
+}
 
-void bitonicSort(float* values, int start, int length, int dir);
-void bitonicMerge(float* values, int start, int length, int dir);
-void exchange(float &a, float &b);
-void bitonicGlobalSort(float* arr, int n, int dir) {
-    for (int k = 2; k <= n; k = 2 * k) {
-        for (int j = k >> 1; j > 0; j = j >> 1) {
-            for (int i = 0; i < n; i++) {
-                int ixj = i ^ j;
-                if (ixj > i) {
-                    if ((i & k) == 0 && arr[i] > arr[ixj]) {
-                        exchange(arr[i], arr[ixj]);
-                    }
-                    if ((i & k) != 0 && arr[i] < arr[ixj]) {
-                        exchange(arr[i], arr[ixj]);
-                    }
-                }
+void bitonicMerge(float* arr, int start, int length, int dir) {
+    if (length > 1) {
+        int k = length / 2;
+        for (int i = start; i < start + k; ++i) {
+            compareExchange(arr, i, i + k, dir);
+        }
+        bitonicMerge(arr, start, k, dir);
+        bitonicMerge(arr, start + k, k, dir);
+    }
+}
+
+
+void bitonicSort(float* arr, int start, int length, int dir) {
+    if (length > 1) {
+        int k = length / 2;
+        bitonicSort(arr, start, k, 1);
+        bitonicSort(arr, start + k, k, 0);
+        bitonicMerge(arr, start, length, dir);
+    }
+}
+
+int main(int argc, char** argv) {
+    MPI_Init(&argc, &argv);
+    int rank, numProcs;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+
+    int n = std::atoi(argv[1]);
+    int processors = numProcs;
+    
+    // Broadcast user input to all processes
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&processors, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Ensure the number of processors and number of values is a power of 2
+    if (processors != 1 && (processors & (processors - 1)) != 0) {
+        if (rank == 0) {
+            std::cerr << "Number of processors must be a power of 2." << std::endl;
+        }
+        MPI_Finalize();
+        return 1;
+    }
+    if (n != 1 && (n & (n - 1)) != 0) {
+        if (rank == 0) {
+            std::cerr << "Number of values must be a power of 2." << std::endl;
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    // Ensure the number of elements is a multiple of the number of processors
+    int elementsPerProc = n / processors;
+    if (n % processors != 0) {
+        if (rank == 0) {
+            std::cerr << "Number of elements must be a multiple of the number of processors." << std::endl;
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    float* localArray = new float[elementsPerProc];
+
+    if (rank == 0) {
+        // Generate a random array of size n
+        std::srand(static_cast<unsigned int>(time(0)));
+        float* globalArray = (float*) malloc( n * sizeof(float));
+        array_fill(globalArray, n, "Random");
+
+        // Scatter the global array to local arrays
+        MPI_Scatter(globalArray, elementsPerProc, MPI_FLOAT, localArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+        delete[] globalArray;
+    } else {
+        // Receive local array from root process
+        MPI_Scatter(nullptr, 0, MPI_FLOAT, localArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    }
+
+    // Sort local array using Bitonic Sort
+    bitonicSort(localArray, 0, elementsPerProc, 1);
+
+    // Perform parallel Bitonic Merge
+    for (int step = 2; step <= processors; step *= 2) {
+        for (int subStep = step / 2; subStep > 0; subStep /= 2) {
+            for (int i = 0; i < elementsPerProc; i += subStep) {
+                bitonicMerge(localArray, i, subStep, (i / (elementsPerProc / step)) % 2);
             }
         }
     }
-}
-int main(int argc, char *argv[]) {
-    CALI_MARK_BEGIN("main");
 
-    n = atoi(argv[1]); // Change this to your desired array size
-    float *arr ;
-    std::string input_type = argv[2];
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
+    
     if (rank == 0) {
-        CALI_MARK_BEGIN("data_init");
-        arr = (float *)malloc(n * sizeof(float));
-        array_fill(arr, n, input_type);
-        CALI_MARK_END("data_init");
-    }
+        // Gather the sorted local arrays back to the global array
+        float* sortedArray = (float*) malloc( n * sizeof(float));
+        MPI_Gather(localArray, elementsPerProc, MPI_FLOAT, sortedArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        
+        // Merge the sorted subarrays to get the final sorted array
+        bitonicSort(sortedArray, 0, n, 1);
 
-    int chunkSize = n / size; // Assuming n is a multiple of size
-
-    float *local_arr = (float *)malloc(chunkSize * sizeof(float));
-    CALI_MARK_BEGIN("MPI_Scatter");
-    MPI_Scatter(arr, chunkSize, MPI_FLOAT, local_arr, chunkSize, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    CALI_MARK_END("MPI_Scatter");
-
-    CALI_MARK_BEGIN("comp");
-    bitonicSort(local_arr, 0, chunkSize, 1);
-    CALI_MARK_END("comp");
-
-    CALI_MARK_BEGIN("MPI_Gather");
-    MPI_Gather(local_arr, chunkSize, MPI_FLOAT, arr, chunkSize, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    CALI_MARK_END("MPI_Gather");
-    free(local_arr);
-    if (rank == 0) {
-        // Global sorting of the gathered subarrays
-        CALI_MARK_BEGIN("global_sort");
-        bitonicGlobalSort(arr, n, 1);
-        CALI_MARK_END("global_sort");
-
-        // Correctness check
-        CALI_MARK_BEGIN("correctness_check");
-        if (correctness_check(arr, n)) {
-            printf("Array correctly sorted!\n");
+        
+        if (correctness_check(sortedArray, n) == 1) {
+            std::cout << "Sorted Correctly!" << std::endl;
         } else {
-            printf("Array sorting failed\n");
+            std::cout << "Did not sort correctly." << std::endl;
         }
-        CALI_MARK_END("correctness_check");
-        free(arr);
+
+        delete[] sortedArray;
+    } else {
+        // Send local sorted array to the root process
+        MPI_Gather(localArray, elementsPerProc, MPI_FLOAT, nullptr, 0, MPI_FLOAT, 0, MPI_COMM_WORLD);
     }
 
-    CALI_MARK_END("main");
-    adiak::init(NULL);
-    adiak::launchdate();
-    adiak::libraries();
-    adiak::cmdline();
-    adiak::clustername();
-    adiak::value("Algorithm", "BitonicSort");
-    adiak::value("ProgrammingModel", "MPI");
-    adiak::value("Datatype", "float");
-    adiak::value("SizeOfDatatype", 4);
-    adiak::value("InputSize", n);
-    adiak::value("InputType", (char*)input_type.c_str());
-    adiak::value("num_procs", size);
-    adiak::value("group_num", 15);
-    adiak::value("implementation_source", "ONLINE");
+    delete[] localArray;
 
     MPI_Finalize();
+
     return 0;
-}
-
-void bitonicSort(float* values, int start, int length, int dir) {
-    if (length > 1) {
-        int k = length / 2;
-        bitonicSort(values, start, k, 1);
-        bitonicSort(values, start + k, k, 0);
-        bitonicMerge(values, start, length, dir);
-    }
-}
-
-void bitonicMerge(float* values, int start, int length, int dir) {
-    if (length > 1) {
-        int k = length / 2;
-        for (int i = start; i < start + k; i++) {
-            if (dir == (values[i] > values[i + k])) {
-                exchange(values[i], values[i + k]);
-            }
-        }
-        bitonicMerge(values, start, k, dir);
-        bitonicMerge(values, start + k, k, dir);
-    }
-}
-
-void exchange(float &a, float &b) {
-    float temp = a;
-    a = b;
-    b = temp;
 }
