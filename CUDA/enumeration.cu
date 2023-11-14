@@ -97,7 +97,7 @@ __global__ void sortArray(float *array, float *sorted_array, int *rank, int n, i
 int main(int argc, char *argv[])
 {
   
-    CALI_MARK_BEGIN("main");
+
     THREADS = atoi(argv[1]);
     NUM_VALS = atoi(argv[2]);
     BLOCKS = NUM_VALS / THREADS;
@@ -205,19 +205,19 @@ int main(int argc, char *argv[])
     adiak::value("Algorithm", "EnumerationSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
     adiak::value("ProgrammingModel", "CUDA"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
     adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
-    adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("SizeOfDatatype", "4"); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
     adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
     adiak::value("InputType", "Sorted"); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
     // adiak::value("num_procs", ); // The number of processors (MPI ranks)
     adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
     adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
-    adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("group_num", "15"); // The number of your group (integer, e.g., 1, 10)
     adiak::value("implementation_source", "Handwritten"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
 
 
 //   print_elapsed(start, stop);
-  CALI_MARK_END("main");
+
 
   // Flush Caliper output before finalizing MPI
   mgr.stop();
