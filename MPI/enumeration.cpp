@@ -87,8 +87,8 @@ double total_time_start = MPI_Wtime();
 // CALI_MARK_BEGIN(whole_computation);
 
 // Create caliper ConfigManager object
-// cali::ConfigManager mgr;
-// mgr.start();
+cali::ConfigManager mgr;
+mgr.start();
 
 /**************************** master task ************************************/
    if (taskid == MASTER)
@@ -99,6 +99,7 @@ double total_time_start = MPI_Wtime();
             printf("Initializing arrays...\n");
 
             const int n = NUM_VALS;
+            float *h_array;
 
             CALI_MARK_BEGIN("data_init");
             h_array = (float*)malloc(n * sizeof(float));
