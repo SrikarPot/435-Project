@@ -142,7 +142,7 @@ mgr.start();
                     rank[count] = 0;
                     rank_idx[count] = i;
                     for (int j = 0; j < NUM_VALS; j++) {
-                        if (received_data[j] < received_data[i] || (received_data[j] == received_data[i] && j < i)) {
+                        if (h_array[j] < h_array[i] || (h_array[j] == h_array[i] && j < i)) {
                             rank[count]++;
                         }
                     }
