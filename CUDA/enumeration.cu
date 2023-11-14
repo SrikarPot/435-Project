@@ -83,15 +83,15 @@ int main(int argc, char *argv[])
     // Create caliper ConfigManager object
     cali::ConfigManager mgr;
     mgr.start();
-    CALI_MARK_BEGIN("data_init");
-
     const int n = NUM_VALS; // Size of the array
+
+    CALI_MARK_BEGIN("data_init");
     float *h_array = new float[n];
-    int *h_rank = new int[n];
     float *sorted_array = new float[n];
 
     // Initialize the array with random values
     array_fill(h_array, n, input_type);
+    CALI_MARK_END("data_init");
     
 
     // Print the og array
@@ -107,7 +107,6 @@ int main(int argc, char *argv[])
     cudaMalloc((void**)&d_array, sizeof(float) * n);
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
     cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
-    CALI_MARK_END("data_init");
 
     CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_large");
@@ -146,7 +145,9 @@ int main(int argc, char *argv[])
     // CALI_MARK_END("comm_large");
 
     CALI_MARK_BEGIN("comm_large");
+    CALI_MARK_BEGIN("cudaMemcpy");
     cudaMemcpy(sorted_array, sorted_array_device, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    CALI_MARK_END("cudaMemcpy");
     CALI_MARK_END("comm_large");
 
     CALI_MARK_END("comm");
@@ -169,7 +170,6 @@ int main(int argc, char *argv[])
  
     // Clean up
     delete[] h_array;
-    delete[] h_rank;
     delete[] sorted_array;
     cudaFree(d_array);
     cudaFree(d_rank);
