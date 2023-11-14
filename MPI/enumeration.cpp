@@ -107,11 +107,11 @@ mgr.start();
             CALI_MARK_END("data_init");
         //INITIALIZATION PART FOR THE MASTER PROCESS ENDS HERE
 
-        std::cout << "Original Array: ";
-        for (int i = 0; i < n; i++) {
-            std::cout << h_array[i] << " ";
-        }
-        std::cout << std::endl;
+        // std::cout << "Original Array: ";
+        // for (int i = 0; i < n; i++) {
+        //     std::cout << h_array[i] << " ";
+        // }
+        // std::cout << std::endl;
       
       
         //SEND ARRAY DATA PART FOR THE MASTER PROCESS STARTS HERE
@@ -156,8 +156,8 @@ mgr.start();
             CALI_MARK_BEGIN("comp");
             CALI_MARK_BEGIN("comp_small");
             for (int i = 0; i < calculations_per_worker; i++){
-                std::cout << "index: " << rank_idx[i] << " ";
-                std::cout << "is rank: " << rank[i] << std::endl;
+                // std::cout << "index: " << rank_idx[i] << " ";
+                // std::cout << "is rank: " << rank[i] << std::endl;
                 sorted_array[rank[i]] = h_array[rank_idx[i]];
             }
             CALI_MARK_END("comp_small");
@@ -176,8 +176,8 @@ mgr.start();
 
                 for (int i = 0; i < calculations_per_worker; i++){
                     sorted_array[rank[i]] = h_array[rank_idx[i]];
-                    std::cout << "index: " << rank_idx[i] << " ";
-                    std::cout << "is rank: " << rank[i] << std::endl;
+                    // std::cout << "index: " << rank_idx[i] << " ";
+                    // std::cout << "is rank: " << rank[i] << std::endl;
                 }
 
                 printf("Received results from task %d\n",source);
@@ -187,11 +187,11 @@ mgr.start();
             CALI_MARK_END("comm_large");
             CALI_MARK_END("comm");
       
-        std::cout << "Sorted Array: ";
-        for (int i = 0; i < n; i++) {
-            std::cout << sorted_array[i] << " ";
-        }
-        std::cout << std::endl;
+        // std::cout << "Sorted Array: ";
+        // for (int i = 0; i < n; i++) {
+        //     std::cout << sorted_array[i] << " ";
+        // }
+        // std::cout << std::endl;
       
         CALI_MARK_BEGIN("correctness_check");
         if (correctness_check(sorted_array, n)) {
