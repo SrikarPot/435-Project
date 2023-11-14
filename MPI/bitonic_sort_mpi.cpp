@@ -1,17 +1,17 @@
 #include <iostream>
-#include <vector>
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
 #include <mpi.h>
+#include "helper.h"
 
-void compareExchange(std::vector<int>& arr, int i, int j, int dir) {
+void compareExchange(float* arr, int i, int j, int dir) {
     if ((arr[i] > arr[j]) == dir) {
         std::swap(arr[i], arr[j]);
     }
 }
 
-void bitonicMerge(std::vector<int>& arr, int start, int length, int dir) {
+void bitonicMerge(float* arr, int start, int length, int dir) {
     if (length > 1) {
         int k = length / 2;
         for (int i = start; i < start + k; ++i) {
@@ -22,7 +22,7 @@ void bitonicMerge(std::vector<int>& arr, int start, int length, int dir) {
     }
 }
 
-void bitonicSort(std::vector<int>& arr, int start, int length, int dir) {
+void bitonicSort(float* arr, int start, int length, int dir) {
     if (length > 1) {
         int k = length / 2;
         bitonicSort(arr, start, k, 1);
@@ -37,22 +37,24 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
-    int n, processors;
-    if (rank == 0) {
-        std::cout << "Enter the size of the array: ";
-        std::cin >> n;
-        std::cout << "Enter the number of processors: ";
-        std::cin >> processors;
-    }
+    int n = std::atoi(argv[1]);
+    int processors = numProcs;
 
     // Broadcast user input to all processes
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&processors, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    // Ensure the number of processors is a power of 2
+    // Ensure the number of processors and number of values is a power of 2
     if (processors != 1 && (processors & (processors - 1)) != 0) {
         if (rank == 0) {
             std::cerr << "Number of processors must be a power of 2." << std::endl;
+        }
+        MPI_Finalize();
+        return 1;
+    }
+    if (n != 1 && (n & (n - 1)) != 0) {
+        if (rank == 0) {
+            std::cerr << "Number of values must be a power of 2." << std::endl;
         }
         MPI_Finalize();
         return 1;
@@ -68,21 +70,26 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::vector<int> localArray(elementsPerProc);
+    float* localArray = new float[elementsPerProc];
 
     if (rank == 0) {
         // Generate a random array of size n
-        std::srand(static_cast<unsigned int>(time(0));
-        std::vector<int> globalArray(n);
+        std::srand(static_cast<unsigned int>(time(0)));
+        float* globalArray = new float[n];
+        array_fill(globalArray, n, "Random");
+        // Print the initial array
         for (int i = 0; i < n; i++) {
-            globalArray[i] = std::rand() % 100;
+            std::cout << globalArray[i] << " ";
         }
+        std::cout << std::endl;
 
         // Scatter the global array to local arrays
-        MPI_Scatter(globalArray.data(), elementsPerProc, MPI_INT, localArray.data(), elementsPerProc, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Scatter(globalArray, elementsPerProc, MPI_FLOAT, localArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+        delete[] globalArray;
     } else {
         // Receive local array from root process
-        MPI_Scatter(nullptr, 0, MPI_INT, localArray.data(), elementsPerProc, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Scatter(nullptr, 0, MPI_FLOAT, localArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
     }
 
     // Sort local array using Bitonic Sort
@@ -99,8 +106,8 @@ int main(int argc, char** argv) {
 
     // Gather the sorted local arrays back to the global array
     if (rank == 0) {
-        std::vector<int> sortedArray(n);
-        MPI_Gather(localArray.data(), elementsPerProc, MPI_INT, sortedArray.data(), elementsPerProc, MPI_INT, 0, MPI_COMM_WORLD);
+        float* sortedArray = new float[n];
+        MPI_Gather(localArray, elementsPerProc, MPI_FLOAT, sortedArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
         // Merge the sorted subarrays to get the final sorted array
         for (int step = processors / 2; step > 0; step /= 2) {
@@ -114,10 +121,14 @@ int main(int argc, char** argv) {
             std::cout << sortedArray[i] << " ";
         }
         std::cout << std::endl;
+
+        delete[] sortedArray;
     } else {
         // Send local sorted array to the root process
-        MPI_Gather(localArray.data(), elementsPerProc, MPI_INT, nullptr, 0, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Gather(localArray, elementsPerProc, MPI_FLOAT, nullptr, 0, MPI_FLOAT, 0, MPI_COMM_WORLD);
     }
+
+    delete[] localArray;
 
     MPI_Finalize();
 
