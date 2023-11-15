@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <iostream>
+#include <string>
 
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
@@ -22,6 +23,7 @@
 int THREADS;
 int BLOCKS;
 int NUM_VALS;
+std::string ARRAY_TYPE;
 
 cudaEvent_t start_sort, end_sort, start_host_device, end_host_device, start_device_host, end_device_host;
 
@@ -161,6 +163,7 @@ int main(int argc, char *argv[])
   cudaEventCreate(&end_device_host);
   THREADS = atoi(argv[1]);
   NUM_VALS = atoi(argv[2]);
+  ARRAY_TYPE = argv[3];
   BLOCKS = NUM_VALS / THREADS;
 
   printf("Number of threads: %d\n", THREADS);
@@ -175,7 +178,7 @@ int main(int argc, char *argv[])
 
   float *values = (float*) malloc( NUM_VALS * sizeof(float));
   CALI_MARK_BEGIN("data_init");
-  array_fill(values, NUM_VALS);
+  array_fill(values, NUM_VALS, ARRAY_TYPE);
   CALI_MARK_END("data_init");
 
   start = clock();
@@ -190,8 +193,14 @@ int main(int argc, char *argv[])
   std::cout << "effective bandwidth: " << effective_bandwidth_gb_s << std::endl;
 
   CALI_MARK_BEGIN("correctness_check");
-  correctness_check(values, NUM_VALS);
+  int correct = correctness_check(values, NUM_VALS);
   CALI_MARK_END("correctness_check");
+
+  if(correct == 1) {
+    std::cout << "Sorted Correctly!" << std::endl;
+  } else {
+    std::cout << "Did not sort correctly." << std::endl;
+  }
 
   adiak::init(NULL);
   adiak::launchdate();    // launch date of the job
@@ -203,7 +212,7 @@ int main(int argc, char *argv[])
   adiak::value("Datatype", float); // The datatype of input elements (e.g., double, int, float)
   adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
   adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
-  adiak::value("InputType", "Sorted"); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+  adiak::value("InputType", ARRAY_TYPE); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
   // adiak::value("num_procs", ); // The number of processors (MPI ranks)
   adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
   adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 

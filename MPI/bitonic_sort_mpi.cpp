@@ -2,7 +2,11 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
+#include <string>
 #include <mpi.h>
+#include <caliper/cali.h>
+#include <caliper/cali-manager.h>
+#include <adiak.hpp>
 #include "helper.h"
 
 void compareExchange(float* arr, int i, int j, int dir) {
@@ -39,6 +43,7 @@ int main(int argc, char** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
     int n = std::atoi(argv[1]);
+    std::string array_type = argv[2];
     int processors = numProcs;
     
     // Broadcast user input to all processes
@@ -77,10 +82,14 @@ int main(int argc, char** argv) {
         // Generate a random array of size n
         std::srand(static_cast<unsigned int>(time(0)));
         float* globalArray = (float*) malloc( n * sizeof(float));
-        array_fill(globalArray, n, "Random");
+        array_fill(globalArray, n, array_type);
 
+        CALI_MARK_BEGIN("comm");
+        CALI_MARK_BEGIN("comm_large");
         // Scatter the global array to local arrays
         MPI_Scatter(globalArray, elementsPerProc, MPI_FLOAT, localArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        CALI_MARK_END("comm_large");
+        CALI_MARK_END("comm");
 
         delete[] globalArray;
     } else {
@@ -88,6 +97,8 @@ int main(int argc, char** argv) {
         MPI_Scatter(nullptr, 0, MPI_FLOAT, localArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
     }
 
+    CALI_MARK_BEGIN("comp");
+    CALI_MARK_BEGIN("comp_small");
     // Sort local array using Bitonic Sort
     bitonicSort(localArray, 0, elementsPerProc, 1);
 
@@ -99,18 +110,30 @@ int main(int argc, char** argv) {
             }
         }
     }
+    CALI_MARK_END("comp_small")
+    CALI_MARK_END("comp");
 
     
     if (rank == 0) {
         // Gather the sorted local arrays back to the global array
         float* sortedArray = (float*) malloc( n * sizeof(float));
+        CALI_MARK_BEGIN("comm");
+        CALI_MARK_BEGIN("comm_large");
         MPI_Gather(localArray, elementsPerProc, MPI_FLOAT, sortedArray, elementsPerProc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        CALI_MARK_END("comm_large");
+        CALI_MARK_END("comm");
         
+        CALI_MARK_BEGIN("comp");
+        CALI_MARK_BEGIN("comp_large")
         // Merge the sorted subarrays to get the final sorted array
         bitonicSort(sortedArray, 0, n, 1);
+        CALI_MARK_END("comp_large")
+        CALI_MARK_END("comp");
 
-        
-        if (correctness_check(sortedArray, n) == 1) {
+        CALI_MARK_BEGIN("correctness_check");
+        int correct = correctness_check(sortedArray, n);
+        CALI_MARK_END("correctness_check");
+        if (correct == 1) {
             std::cout << "Sorted Correctly!" << std::endl;
         } else {
             std::cout << "Did not sort correctly." << std::endl;
@@ -118,11 +141,32 @@ int main(int argc, char** argv) {
 
         delete[] sortedArray;
     } else {
+        CALI_MARK_BEGIN("comm");
+        CALI_MARK_BEGIN("comm_small");
         // Send local sorted array to the root process
         MPI_Gather(localArray, elementsPerProc, MPI_FLOAT, nullptr, 0, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        CALI_MARK_END("comm_small");
+        CALI_MARK_END("comm");
     }
 
     delete[] localArray;
+
+    adiak::init(NULL);
+    adiak::launchdate();    // launch date of the job
+    adiak::libraries();     // Libraries used
+    adiak::cmdline();       // Command line used to launch the job
+    adiak::clustername();   // Name of the cluster
+    adiak::value("Algorithm", "BitonicSort"); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
+    adiak::value("ProgrammingModel", "MPI"); // e.g., "MPI", "CUDA", "MPIwithCUDA"
+    adiak::value("Datatype", float); // The datatype of input elements (e.g., double, int, float)
+    adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("InputSize", n); // The number of elements in input dataset (1000)
+    adiak::value("InputType", array_type); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    // adiak::value("num_procs", ); // The number of processors (MPI ranks)
+    adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
+    adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
+    adiak::value("group_num", 15); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("implementation_source", "Lab 3"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
     MPI_Finalize();
 
