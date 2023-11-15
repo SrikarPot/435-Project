@@ -72,16 +72,13 @@ void bitonic_sort(float *values)
   //MEM COPY FROM HOST TO DEVICE
   CALI_MARK_BEGIN("comm");
   CALI_MARK_BEGIN("comm_large");
-  cudaEventRecord(start_host_device);
-  CALI_MARK_BEGIN("cudaMemcpyHostToDevice");
+  CALI_MARK_BEGIN("cudaMemcpy");
   cudaMemcpy(dev_values, values, size, cudaMemcpyHostToDevice);
-  CALI_MARK_END("cudaMemcpyHostToDevice");
-  cudaEventRecord(end_host_device);
+  CALI_MARK_END("cudaMemcpy");
   CALI_MARK_END("comm_large");
   CALI_MARK_END("comm");
 
-  cudaEventSynchronize(end_host_device);
-  cudaEventElapsedTime(&cudaMemcpy_host_to_device_time, start_host_device, end_host_device);
+
 
   dim3 blocks(BLOCKS,1);    /* Number of blocks   */
   dim3 threads(THREADS,1);  /* Number of threads  */
@@ -100,11 +97,8 @@ void bitonic_sort(float *values)
       kernel_call++;
     }
   }
-  cudaEventRecord(end_sort);
-  cudaDeviceSynchronize();
   CALI_MARK_END("comp_large");
   CALI_MARK_END("comp");
-  cudaEventElapsedTime(&bitonic_sort_step_time, start_sort, end_sort);
 
   effective_bandwidth_gb_s = ((kernel_call * 6 * NUM_VALS * sizeof(float)) / 1e9) / (bitonic_sort_step_time / 1000);
   
@@ -112,26 +106,21 @@ void bitonic_sort(float *values)
   //MEM COPY FROM DEVICE TO HOST
   CALI_MARK_BEGIN("comm");
   CALI_MARK_BEGIN("comm_large");
-  cudaEventRecord(start_device_host);
-  CALI_MARK_BEGIN("cudaMemcpyDeviceToHost");
+  CALI_MARK_BEGIN("cudaMemcpy");
   cudaMemcpy(values, dev_values, size, cudaMemcpyDeviceToHost);
-  CALI_MARK_END("cudaMemcpyDeviceToHost");
-  cudaEventRecord(end_device_host);
-  
-
-  cudaEventSynchronize(end_device_host);
-  cudaEventElapsedTime(&cudaMemcpy_device_to_host_time, start_device_host, end_device_host);
-  
-  CALI_MARK_BEGIN("cudaFree");
-  cudaFree(dev_values);
-  CALI_MARK_END("cudaFree");
-  
+  CALI_MARK_END("cudaMemcpy");
   CALI_MARK_END("comm_large");
   CALI_MARK_END("comm");
+
+  
+  cudaFree(dev_values);
+  
+
 }
 
 int main(int argc, char *argv[])
 {
+  CALI_MARK_BEGIN("main");
   cudaEventCreate(&start_sort);
   cudaEventCreate(&end_sort);
   cudaEventCreate(&start_host_device);
@@ -173,7 +162,7 @@ int main(int argc, char *argv[])
   bool correct = correctness_check(values, NUM_VALS);
   CALI_MARK_END("correctness_check");
   if(correct) printf("Array correctly sorted\n");
-  
+ CALI_MARK_END("main");
  adiak::init(NULL);
   adiak::launchdate();    // launch date of the job
   adiak::libraries();     // Libraries used
