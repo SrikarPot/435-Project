@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
     bool correct = correctness_check(sorted_array, NUM_VALS);
     CALI_MARK_END("correctness_check");
     if(correct) {
-        printf("Array correctly sorted\n") 
+        printf("Array correctly sorted\n"); 
     }
     else {
         printf("Array incorrectly sorted\n");
