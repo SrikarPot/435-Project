@@ -53,7 +53,7 @@ void array_fill(float *arr, int length, const std::string& input_type)
         for (int i = 0; i < length; ++i) {
             arr[i] = random_float();
         }
-    } else if (input_type == "1\%perturbed") {
+    } else if (input_type == "1%%perturbed") {
         // Fill the array with values slightly perturbed from a sorted sequence
         for (int i = 0; i < length; ++i) {
             arr[i] = static_cast<float>(i) / static_cast<float>(length);
