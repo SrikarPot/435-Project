@@ -82,12 +82,12 @@ int main(int argc, char *argv[])
 
     // Create caliper ConfigManager object
     cali::ConfigManager mgr;
-    printf("cali -3\n");
+    // printf("cali -3\n");
     mgr.start();
-    printf("cali -2\n");
+    // printf("cali -2\n");
     const int n = NUM_VALS; // Size of the array
 
-    printf("cali -1\n");
+    // printf("cali -1\n");
 
     CALI_MARK_BEGIN("data_init");
     printf("cali 0\n");
