@@ -38,12 +38,13 @@ __global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
 
     for(int i = k; i < n; i += THREADS){
-        
+        if (i < n){
         rank[i] = 0;
         for (int j = 0; j < n; j++) {
             if (array[j] < array[i] || (array[j] == array[i] && j < i)) {
                 rank[i]++;
             }
+        }
         }
     }
 }
