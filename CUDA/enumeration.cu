@@ -182,11 +182,11 @@ int main(int argc, char *argv[])
     // }
 
     // Print the sorted array
-    // std::cout << "Sorted Array: ";
-    // for (int i = 0; i < n; i++) {
-    //     std::cout << sorted_array[i] << " ";
-    // }
-    // std::cout << std::endl;
+    std::cout << "Sorted Array: ";
+    for (int i = 0; i < n; i++) {
+        std::cout << sorted_array[i] << " ";
+    }
+    std::cout << std::endl;
  
     // Clean up
     delete[] h_array;
