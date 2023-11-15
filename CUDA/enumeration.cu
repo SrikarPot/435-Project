@@ -173,7 +173,12 @@ int main(int argc, char *argv[])
     CALI_MARK_BEGIN("correctness_check");
     bool correct = correctness_check(sorted_array, NUM_VALS);
     CALI_MARK_END("correctness_check");
-    if(correct) printf("Array correctly sorted\n") else printf("Array incorrectly sorted\n");
+    if(correct) {
+        printf("Array correctly sorted\n") 
+    }
+    else {
+        printf("Array incorrectly sorted\n");
+    }
 
     // for (int i = 0; i < NUM_VALS; i++){
     //     sorted_array[rank[i]] = h_array[i];
