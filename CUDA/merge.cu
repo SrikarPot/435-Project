@@ -132,7 +132,6 @@ int main(int argc, char *argv[])
   printf("Number of values: %d\n", NUM_VALS);
   printf("Number of values: %d\n", NUM_VALS);
   printf("Number of blocks: %d\n", BLOCKS);
-
   clock_t start, stop;
   CALI_MARK_BEGIN("data_init");
   float *values = (float*) malloc( NUM_VALS * sizeof(float));
