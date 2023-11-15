@@ -1,0 +1,14 @@
+
+Inactive Modules:
+  1) UCX/1.9.0     2) numactl/2.0.13
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) binutils/2.35     2) zlib/1.2.11
+
+The following have been reloaded with a version change:
+  1) GCCcore/10.2.0 => GCCcore/7.3.0
+
+algo: merge, num_threads: 4, num_vals: 16, input_type: Random
+terminate called after throwing an instance of 'std::logic_error'
+  what():  basic_string::_M_construct null not valid
+/var/spool/slurmd/job9241447/slurm_script: line 35: 132603 Aborted                 (core dumped) CALI_CONFIG="spot(output=${algo}-th${num_threads}-v${num_vals}-ty${input_type}.cali),     cuda.gputime" ./$algo $num_threads $num_vals

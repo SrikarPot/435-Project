@@ -33,7 +33,7 @@ int NUM_VALS;
 
 int main (int argc, char *argv[])
 {
-CALI_CXX_MARK_FUNCTION;
+// CALI_CXX_MARK_FUNCTION;
 // Create caliper ConfigManager object
 cali::ConfigManager mgr;
 mgr.start();
@@ -251,6 +251,7 @@ float sorted_array[NUM_VALS];
       //SENDING PART FOR WORKER PROCESS ENDS HERE
 
    }
+    MPI_Barrier(MPI_COMM_WORLD);
 
    // WHOLE PROGRAM COMPUTATION PART ENDS HERE
     CALI_MARK_END("main");

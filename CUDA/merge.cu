@@ -120,6 +120,10 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
 
 int main(int argc, char *argv[])
 {
+    // Create caliper ConfigManager object
+  cali::ConfigManager mgr;
+  mgr.start();
+
   CALI_MARK_BEGIN("main");
   THREADS = atoi(argv[1]);
   NUM_VALS = atoi(argv[2]);
@@ -129,9 +133,6 @@ int main(int argc, char *argv[])
   printf("Number of values: %d\n", NUM_VALS);
   printf("Number of values: %d\n", NUM_VALS);
   printf("Number of blocks: %d\n", BLOCKS);
-  // Create caliper ConfigManager object
-  cali::ConfigManager mgr;
-  mgr.start();
 
   clock_t start, stop;
   CALI_MARK_BEGIN("data_init");

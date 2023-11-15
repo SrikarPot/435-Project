@@ -52,15 +52,14 @@ void cudaOddEvenSort(float *h_a, int n)
 {
   float *d_a;
   // Allocate memory on the device
+
+  cudaMalloc(&d_a, n * sizeof(int));
+  // Copy data from host to device
   CALI_MARK_BEGIN("comm");
   CALI_MARK_BEGIN("comm_large");
-  CALI_MARK_BEGIN("cudaMalloc");
-  cudaMalloc(&d_a, n * sizeof(int));
-  CALI_MARK_END("cudaMalloc");
-  // Copy data from host to device
-  CALI_MARK_BEGIN("cudaMemcpyHostToDevice");
+  CALI_MARK_BEGIN("cudaMemcpy");
   cudaMemcpy(d_a, h_a, n * sizeof(int), cudaMemcpyHostToDevice);
-  CALI_MARK_END("cudaMemcpyHostToDevice");
+  CALI_MARK_END("cudaMemcpy");
   CALI_MARK_END("comm_large");
   CALI_MARK_END("comm");
 
@@ -90,16 +89,14 @@ void cudaOddEvenSort(float *h_a, int n)
   // Copy the sorted array back to the host
   CALI_MARK_BEGIN("comm");
   CALI_MARK_BEGIN("comm_large");
-  CALI_MARK_BEGIN("cudaMemcpyDeviceToHost");
+  CALI_MARK_BEGIN("cudaMemcpy");
   cudaMemcpy(h_a, d_a, n * sizeof(int), cudaMemcpyDeviceToHost);
-  CALI_MARK_END("cudaMemcpyDeviceToHost");
-  
-  // Free device memory
-  CALI_MARK_BEGIN("cudaFree");
-  cudaFree(d_a);
-  CALI_MARK_END("cudaFree");
+  CALI_MARK_END("cudaMemcpy");
   CALI_MARK_END("comm_large");
   CALI_MARK_END("comm");
+  // Free device memory
+  cudaFree(d_a);
+
 }
 
 
@@ -108,6 +105,10 @@ void cudaOddEvenSort(float *h_a, int n)
 
 int main(int argc, char *argv[])
 {
+
+  cali::ConfigManager mgr;
+  mgr.start();
+
   CALI_MARK_BEGIN("main");
 
   THREADS = atoi(argv[1]);  // Number of threads
@@ -124,15 +125,13 @@ int main(int argc, char *argv[])
   printf("Number of blocks: %d\n", BLOCKS);
 
   // Initialize data in the host array
-  // CALI_MARK_BEGIN("data_init");
+   CALI_MARK_BEGIN("data_init");
   // data_init(h_a, N);
   array_fill(values, NUM_VALS, input_type);
   // array_print(values, NUM_VALS);
 
-  cali::ConfigManager mgr;
-  mgr.start();
 
-  // CALI_MARK_END("data_init");
+   CALI_MARK_END("data_init");
 
   // Caliper annotation for communication region, for example with MPI (not present in the code)
   // CALI_MARK_BEGIN("comm");
@@ -140,15 +139,12 @@ int main(int argc, char *argv[])
   // CALI_MARK_END("comm");
 
   // Caliper instrumentation for computation region
-  CALI_MARK_BEGIN("comp");
-  CALI_MARK_BEGIN("comp_large");
+
   
   // Perform sorting on the GPU
   cudaOddEvenSort(values, NUM_VALS);
   cudaDeviceSynchronize();
 
-  CALI_MARK_END("comp_large");
-  CALI_MARK_END("comp");
 
   // Caliper annotation for checking the correctness of the sorting operation
   CALI_MARK_BEGIN("correctness_check");

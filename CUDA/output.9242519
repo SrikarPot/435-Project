@@ -1,0 +1,15 @@
+
+Inactive Modules:
+  1) UCX/1.9.0     2) numactl/2.0.13
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) binutils/2.35     2) zlib/1.2.11
+
+The following have been reloaded with a version change:
+  1) GCCcore/10.2.0 => GCCcore/7.3.0
+
+algo: oddeven, num_threads: 4, num_vals: 16, input_type: Random
+RandomNumber of threads: 4
+Number of values: 16
+Number of blocks: 4
+The array is sorted correctly.
