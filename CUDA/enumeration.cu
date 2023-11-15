@@ -46,7 +46,7 @@ __global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
                     rank[i]++;
                 }
             }
-            printf(array[i]);
+            printf((char*)array[i]);
             printf("\n");
         }
     }
