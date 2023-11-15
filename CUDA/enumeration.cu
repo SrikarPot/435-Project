@@ -82,18 +82,27 @@ int main(int argc, char *argv[])
 
     // Create caliper ConfigManager object
     cali::ConfigManager mgr;
+    printf("cali -3\n");
     mgr.start();
+    printf("cali -2\n");
     const int n = NUM_VALS; // Size of the array
 
+    printf("cali -1\n");
+
     CALI_MARK_BEGIN("data_init");
+    printf("cali 0\n");
     float *h_array = new float[n];
+    printf("cali 1\n");
     float *sorted_array = new float[n];
+
+    printf("cali 2\n");
 
     // Initialize the array with random values
     array_fill(h_array, n, input_type);
+    printf("cali 3\n");
     CALI_MARK_END("data_init");
     
-    printf("Array filled");
+    printf("Array filled\n");
 
     // Print the og array
     // std::cout << "Original Array: ";
@@ -109,7 +118,7 @@ int main(int argc, char *argv[])
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
     cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
 
-    printf("Cuda arrays allocated");
+    printf("Cuda arrays allocated\n");
 
     CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_large");
@@ -120,7 +129,7 @@ int main(int argc, char *argv[])
     CALI_MARK_END("comm_large");
     CALI_MARK_END("comm");
 
-    printf("cuda Memcpy 1");
+    printf("cuda Memcpy 1\n");
 
     CALI_MARK_BEGIN("comp");
     CALI_MARK_BEGIN("comp_large");
@@ -130,7 +139,7 @@ int main(int argc, char *argv[])
     cudaDeviceSynchronize();
     CALI_MARK_END("comp_large");
 
-    printf("enum sort finished");
+    printf("enum sort finished\n");
 
     CALI_MARK_BEGIN("comp_large");
     // Launch the sorting kernel to rearrange the array
@@ -140,7 +149,7 @@ int main(int argc, char *argv[])
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
 
-    printf("sortarray finished");
+    printf("sortarray finished\n");
 
     CALI_MARK_BEGIN("comm");
     
@@ -161,7 +170,7 @@ int main(int argc, char *argv[])
 
     CALI_MARK_END("comm");
 
-    printf("memcpy to sorted array finished");
+    printf("memcpy to sorted array finished\n");
 
     CALI_MARK_BEGIN("correctness_check");
     bool correct = correctness_check(sorted_array, NUM_VALS);
