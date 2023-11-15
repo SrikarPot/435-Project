@@ -13,7 +13,7 @@ void print_elapsed(clock_t start, clock_t stop)
 
 float random_float()
 {
-  return (float)rand()/(float)RAND_MAX;
+  return (float)rand()/(float)1000000;
 }
 
 void array_print(float *arr, int length) 
@@ -79,6 +79,8 @@ int correctness_check(float *h_a, int n)
     {
         if (h_a[i - 1] > h_a[i])
         {
+            printf("%d %f %f\n", i, h_a[i-1], h_a[i]);
+            array_print(h_a, 20);
             return 0; // Array is not sorted correctly
         }
     }

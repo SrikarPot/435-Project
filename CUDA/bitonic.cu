@@ -88,7 +88,6 @@ void bitonic_sort(float *values)
   CALI_MARK_BEGIN("comp");
   CALI_MARK_BEGIN("comp_large");
 
-  cudaEventRecord(start_sort);
   /* Major step */
   for (k = 2; k <= NUM_VALS; k <<= 1) {
     /* Minor step */

@@ -61,17 +61,16 @@ __device__ void merge(float* values, float* temp, int l, int m, int r)  {
 
 __global__ void merge_sort(float* values, float* temp, int num_vals, int window) {
     int id = threadIdx.x + blockDim.x * blockIdx.x;
-    int l = id*window;
-    int r = l+window;
-
+    long l = (long)id*(long)window;
+    long r = l+(long)window;
     if(r > num_vals) { // final window might be smaller
       r = num_vals;
     }
 
-    int m = l + (r-l)/2;  
+    long m = l + (r-l)/2;  
 
-    if(l < num_vals) { // check if thread is neccesary
-      merge(values, temp, l, m, r);
+    if(l < (long)num_vals) { // check if thread is neccesary
+      merge(values, temp, (int)l, (int)m, (int)r);
     }
 } 
 
@@ -149,6 +148,7 @@ int main(int argc, char *argv[])
   bool correct = correctness_check(values, NUM_VALS);
   CALI_MARK_END("correctness_check");
   if(correct) printf("Array correctly sorted\n");
+  else printf("Not sorted correctly\n");
 
   CALI_MARK_END("main");
     adiak::init(NULL);
