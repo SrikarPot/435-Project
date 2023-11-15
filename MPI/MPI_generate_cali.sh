@@ -11,7 +11,7 @@ for algorithm in "${algorithms[@]}"; do
     for val_count in "${num_vals[@]}"; do
       for process_count in "${num_processes[@]}"; do
         # Formulate the sbatch command
-        sbatch_command="sbatch MPI.grace_job $algorithm $process_count $val_count $input_type"
+        sbatch_command="sbatch mpi.grace_job $algorithm $process_count $val_count $input_type"
         
         # Print the command before executing (optional)
         echo "Running command: $sbatch_command"
