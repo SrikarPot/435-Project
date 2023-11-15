@@ -38,13 +38,14 @@ __global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
 
     for(int i = k; i < n; i += THREADS){
-        if (i < n){
-        rank[i] = 0;
-        for (int j = 0; j < n; j++) {
-            if (array[j] < array[i] || (array[j] == array[i] && j < i)) {
-                rank[i]++;
+        
+        if (i < n) {
+            rank[i] = 0;
+            for (int j = 0; j < n; j++) {
+                if (array[j] < array[i] || (array[j] == array[i] && j < i)) {
+                    rank[i]++;
+                }
             }
-        }
         }
     }
 }
@@ -171,21 +172,10 @@ int main(int argc, char *argv[])
 
     printf("memcpy to sorted array finished\n");
 
-    std::cout << "Sorted Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << sorted_array[i] << " ";
-    }
-    std::cout << std::endl;
-
     CALI_MARK_BEGIN("correctness_check");
     bool correct = correctness_check(sorted_array, NUM_VALS);
     CALI_MARK_END("correctness_check");
-    if(correct) {
-        printf("Array correctly sorted\n"); 
-    }
-    else {
-        printf("Array incorrectly sorted\n");
-    }
+    if(correct) printf("Array correctly sorted\n");
 
     // for (int i = 0; i < NUM_VALS; i++){
     //     sorted_array[rank[i]] = h_array[i];
