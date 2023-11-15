@@ -104,11 +104,11 @@ int main(int argc, char *argv[])
     printf("Array filled\n");
 
     // Print the og array
-    // std::cout << "Original Array: ";
-    // for (int i = 0; i < n; i++) {
-    //     std::cout << h_array[i] << " ";
-    // }
-    // std::cout << std::endl;
+    std::cout << "Original Array: ";
+    for (int i = 0; i < n; i++) {
+        std::cout << h_array[i] << " ";
+    }
+    std::cout << std::endl;
 
     // Device arrays
     float *d_array, *sorted_array_device;
@@ -170,6 +170,12 @@ int main(int argc, char *argv[])
     CALI_MARK_END("comm");
 
     printf("memcpy to sorted array finished\n");
+
+    std::cout << "Sorted Array: ";
+    for (int i = 0; i < n; i++) {
+        std::cout << sorted_array[i] << " ";
+    }
+    std::cout << std::endl;
 
     CALI_MARK_BEGIN("correctness_check");
     bool correct = correctness_check(sorted_array, NUM_VALS);
