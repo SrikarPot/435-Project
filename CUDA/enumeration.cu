@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
     array_fill(h_array, n, input_type);
     CALI_MARK_END("data_init");
     
+    printf("Array filled");
 
     // Print the og array
     // std::cout << "Original Array: ";
@@ -108,6 +109,8 @@ int main(int argc, char *argv[])
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
     cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
 
+    printf("Cuda arrays allocated");
+
     CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_large");
     CALI_MARK_BEGIN("cudaMemcpy");
@@ -117,6 +120,8 @@ int main(int argc, char *argv[])
     CALI_MARK_END("comm_large");
     CALI_MARK_END("comm");
 
+    printf("cuda Memcpy 1");
+
     CALI_MARK_BEGIN("comp");
     CALI_MARK_BEGIN("comp_large");
 
@@ -125,6 +130,8 @@ int main(int argc, char *argv[])
     cudaDeviceSynchronize();
     CALI_MARK_END("comp_large");
 
+    printf("enum sort finished");
+
     CALI_MARK_BEGIN("comp_large");
     // Launch the sorting kernel to rearrange the array
     sortArray<<<BLOCKS, THREADS>>>(d_array, sorted_array_device, d_rank, n, THREADS);
@@ -132,6 +139,8 @@ int main(int argc, char *argv[])
 
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
+
+    printf("sortarray finished");
 
     CALI_MARK_BEGIN("comm");
     
@@ -151,6 +160,8 @@ int main(int argc, char *argv[])
     CALI_MARK_END("comm_large");
 
     CALI_MARK_END("comm");
+
+    printf("memcpy to sorted array finished");
 
     CALI_MARK_BEGIN("correctness_check");
     bool correct = correctness_check(sorted_array, NUM_VALS);
