@@ -13,7 +13,8 @@ void print_elapsed(clock_t start, clock_t stop)
 
 float random_float()
 {
-  return (float)rand()/(float)1000000;
+//   return (float)rand()/(float)1000000;
+  return (float)rand()/(float)FLT_MAX;
 }
 
 void array_print(float *arr, int length) 
@@ -37,7 +38,7 @@ void array_fill(float *arr, int length)
 void array_fill(float *arr, int length, const std::string& input_type)
 {
     srand(static_cast<unsigned>(time(nullptr)));
-    printf("input_type == %s\n\n", input_type);
+    // printf("input_type == %s\n\n", input_type);
 
     if (input_type == "Sorted") {
         // Fill the array with sorted values
@@ -68,6 +69,7 @@ void array_fill(float *arr, int length, const std::string& input_type)
     } else {
         // Handle unknown input_type or provide a default behavior
         // For example, you could fill the array with random values as a default
+        printf("did not recognize input type. Filling with random values\n\n");
         for (int i = 0; i < length; ++i) {
             arr[i] = random_float();
         }

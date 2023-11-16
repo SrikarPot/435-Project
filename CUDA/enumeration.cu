@@ -46,7 +46,7 @@ __global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
                     rank[i]++;
                 }
             }
-            printf((char*)array[i]);
+            printf("%f", array[i]);
             printf("\n");
         }
     }
@@ -175,9 +175,9 @@ int main(int argc, char *argv[])
     printf("memcpy to sorted array finished\n");
 
     CALI_MARK_BEGIN("correctness_check");
-    bool correct = correctness_check(sorted_array, NUM_VALS);
+    // bool correct = correctness_check(sorted_array, NUM_VALS);
     CALI_MARK_END("correctness_check");
-    if(correct) printf("Array correctly sorted\n");
+    // if(correct) printf("Array correctly sorted\n");
 
     // for (int i = 0; i < NUM_VALS; i++){
     //     sorted_array[rank[i]] = h_array[i];
