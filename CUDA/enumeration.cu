@@ -90,26 +90,26 @@ int main(int argc, char *argv[])
     // printf("cali -1\n");
 
     CALI_MARK_BEGIN("data_init");
-    printf("cali 0\n");
+    // printf("cali 0\n");
     float *h_array = new float[n];
-    printf("cali 1\n");
+    // printf("cali 1\n");
     float *sorted_array = new float[n];
 
-    printf("cali 2\n");
+    // printf("cali 2\n");
 
     // Initialize the array with random values
     array_fill(h_array, n, input_type);
-    printf("cali 3\n");
+    // printf("cali 3\n");
     CALI_MARK_END("data_init");
     
-    printf("Array filled\n");
+    // printf("Array filled\n");
 
     // Print the og array
-    std::cout << "Original Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << h_array[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Original Array: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << h_array[i] << " ";
+    // }
+    // std::cout << std::endl;
 
     // Device arrays
     float *d_array, *sorted_array_device;
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     cudaMalloc((void**)&d_rank, sizeof(int) * n);
     cudaMalloc((void**)&sorted_array_device, sizeof(float) * n);
 
-    printf("Cuda arrays allocated\n");
+    // printf("Cuda arrays allocated\n");
 
     CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_large");
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
     CALI_MARK_END("comm_large");
     CALI_MARK_END("comm");
 
-    printf("cuda Memcpy 1\n");
+    // printf("cuda Memcpy 1\n");
 
 
 
@@ -137,12 +137,12 @@ int main(int argc, char *argv[])
 
 
 
-    cudaMemcpy(sorted_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
-    std::cout << "d_Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << sorted_array[i] << ", ";
-    }
-    std::cout << std::endl << std::endl;
+    // cudaMemcpy(sorted_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    // std::cout << "d_Array: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << sorted_array[i] << ", ";
+    // }
+    // std::cout << std::endl << std::endl;
 
 
 
@@ -159,24 +159,24 @@ int main(int argc, char *argv[])
     cudaDeviceSynchronize();
     CALI_MARK_END("comp_large");
 
-    printf("enum sort finished\n");
+    // printf("enum sort finished\n");
 
 
 
 
-    cudaMemcpy(sorted_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
-    std::cout << "d_Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << sorted_array[i] << ", ";
-    }
-    std::cout << std::endl << std::endl;
+    // cudaMemcpy(sorted_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    // std::cout << "d_Array: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << sorted_array[i] << ", ";
+    // }
+    // std::cout << std::endl << std::endl;
 
-    cudaMemcpy(sorted_array, d_rank, sizeof(float) * n, cudaMemcpyDeviceToHost);
-    std::cout << "d_rank: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << sorted_array[i] << ", ";
-    }
-    std::cout << std::endl << std::endl;
+    // cudaMemcpy(sorted_array, d_rank, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    // std::cout << "d_rank: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << sorted_array[i] << ", ";
+    // }
+    // std::cout << std::endl << std::endl;
 
 
 
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
 
-    printf("sortarray finished\n");
+    // printf("sortarray finished\n");
 
     CALI_MARK_BEGIN("comm");
     
@@ -212,23 +212,23 @@ int main(int argc, char *argv[])
 
     CALI_MARK_END("comm");
 
-    printf("memcpy to sorted array finished\n");
+    // printf("memcpy to sorted array finished\n");
 
     CALI_MARK_BEGIN("correctness_check");
-    // bool correct = correctness_check(sorted_array, NUM_VALS);
+    bool correct = correctness_check(sorted_array, NUM_VALS);
     CALI_MARK_END("correctness_check");
-    // if(correct) printf("Array correctly sorted\n");
+    if(correct) printf("Array correctly sorted\n");
 
     // for (int i = 0; i < NUM_VALS; i++){
     //     sorted_array[rank[i]] = h_array[i];
     // }
 
     // Print the sorted array
-    std::cout << "Sorted Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << sorted_array[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Sorted Array: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << sorted_array[i] << " ";
+    // }
+    // std::cout << std::endl;
  
     // Clean up
     delete[] h_array;
