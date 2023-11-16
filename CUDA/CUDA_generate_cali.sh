@@ -6,10 +6,14 @@ num_vals=(65536 262144 1048576 4194304 16777216 67108864 268435456)
 input_types=("Sorted" "Random" "ReverseSorted" "1%perturbed")
 
 # Iterate over all combinations
-for algorithm in "${algorithms[@]}"; do
-  for input_type in "${input_types[@]}"; do
-    for val_count in "${num_vals[@]}"; do
-      for process_count in "${num_processes[@]}"; do
+for algorithm in "${algorithms[@]}"
+do
+  for input_type in "${input_types[@]}"
+  do
+    for val_count in "${num_vals[@]}"
+    do
+      for process_count in "${num_processes[@]}"
+      do
         # Formulate the sbatch command
         sbatch_command="sbatch cuda.grace_job $algorithm $process_count $val_count $input_type"
         
