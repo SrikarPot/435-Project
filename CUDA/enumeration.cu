@@ -76,9 +76,9 @@ int main(int argc, char *argv[])
     BLOCKS = NUM_VALS / THREADS;
     std::string input_type = argv[3];
 
-    printf("Number of threads: %d\n", THREADS);
-    printf("Number of values: %d\n", NUM_VALS);
-    printf("Number of blocks: %d\n", BLOCKS);
+    // printf("Number of threads: %d\n", THREADS);
+    // printf("Number of values: %d\n", NUM_VALS);
+    // printf("Number of blocks: %d\n", BLOCKS);
 
     // Create caliper ConfigManager object
     cali::ConfigManager mgr;
@@ -105,11 +105,11 @@ int main(int argc, char *argv[])
     // printf("Array filled\n");
 
     // Print the og array
-    std::cout << "Original Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << h_array[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Original Array: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << h_array[i] << " ";
+    // }
+    // std::cout << std::endl;
 
     // Device arrays
     float *d_array, *sorted_array_device;
@@ -224,11 +224,11 @@ int main(int argc, char *argv[])
     // }
 
     // Print the sorted array
-    std::cout << "Sorted Array: ";
-    for (int i = 0; i < n; i++) {
-        std::cout << sorted_array[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Sorted Array: ";
+    // for (int i = 0; i < n; i++) {
+    //     std::cout << sorted_array[i] << " ";
+    // }
+    // std::cout << std::endl;
  
     // Clean up
     delete[] h_array;
