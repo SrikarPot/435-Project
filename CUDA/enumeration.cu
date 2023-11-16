@@ -141,6 +141,28 @@ int main(int argc, char *argv[])
 
     printf("enum sort finished\n");
 
+
+
+
+    cudaMemcpy(sorted_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    std::cout << "d_Array: ";
+    for (int i = 0; i < n; i++) {
+        std::cout << sorted_array[i] << ", ";
+    }
+    std::cout << std::endl << std::endl;
+
+    cudaMemcpy(sorted_array, d_rank, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    std::cout << "d_rank: ";
+    for (int i = 0; i < n; i++) {
+        std::cout << sorted_array[i] << ", ";
+    }
+    std::cout << std::endl << std::endl;
+
+
+
+
+
+
     CALI_MARK_BEGIN("comp_large");
     // Launch the sorting kernel to rearrange the array
     sortArray<<<BLOCKS, THREADS>>>(d_array, sorted_array_device, d_rank, n, THREADS);
