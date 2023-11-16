@@ -13,8 +13,7 @@ void print_elapsed(clock_t start, clock_t stop)
 
 float random_float()
 {
-//   return (float)rand()/(float)1000000;
-  return (float)rand()/(float)FLT_MAX;
+  return (float)rand()/(float)1000000;
 }
 
 void array_print(float *arr, int length) 
