@@ -35,7 +35,7 @@ int bitonic_counter = 0;
 
 
 __global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
-    int k = blockIdx.x * blockDim.x + threadIdx.x;
+    long int k = blockIdx.x * blockDim.x + threadIdx.x;
 
     for(int i = k; i < n; i += THREADS){
         
@@ -46,8 +46,6 @@ __global__ void enumerationSort(float *array, int *rank, int n, int THREADS) {
                     rank[i]++;
                 }
             }
-            printf("%f", array[i]);
-            printf("\n");
         }
     }
 }
