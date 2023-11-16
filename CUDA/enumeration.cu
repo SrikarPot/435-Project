@@ -131,6 +131,26 @@ int main(int argc, char *argv[])
 
     printf("cuda Memcpy 1\n");
 
+
+
+
+
+
+
+    cudaMemcpy(sorted_array, d_array, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    std::cout << "d_Array: ";
+    for (int i = 0; i < n; i++) {
+        std::cout << sorted_array[i] << ", ";
+    }
+    std::cout << std::endl << std::endl;
+
+
+
+
+
+
+
+
     CALI_MARK_BEGIN("comp");
     CALI_MARK_BEGIN("comp_large");
 
