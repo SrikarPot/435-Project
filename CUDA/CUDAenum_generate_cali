@@ -23,5 +23,5 @@ for algorithm in "${algorithms[@]}"; do
   done
 done
 
-# chmod +x CUDA_generate_cali.sh
-# ./CUDA_generate_cali.sh
+# chmod +x CUDAenum_generate_cali.sh
+# ./CUDAenum_generate_cali.sh
