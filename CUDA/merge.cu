@@ -68,7 +68,7 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
     }
 
     long m = l + (r-l)/2;  
-
+    printf("%d %d %d\n",l,m,r);
     if(l < (long)num_vals) { // check if thread is neccesary
       merge(values, temp, (int)l, (int)m, (int)r);
     }
@@ -97,7 +97,8 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
   dim3 threads(THREADS,1);  /* Number of threads  */
   CALI_MARK_BEGIN("comp");
   CALI_MARK_BEGIN("comp_large");
-  for(int window = 2; window <= size; window <<=1) {
+  for(int window = 2; window <= NUM_VALS; window <<=1) {
+    printf("%d \n", window);
     merge_sort<<<blocks, threads>>>(dev_values, temp, NUM_VALS, window);
   }
   CALI_MARK_END("comp_large");
