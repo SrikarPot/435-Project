@@ -1,0 +1,2 @@
+algo: merge, processes: 4, num_vals: 16, input_type: Random
+Array correctly sorted!

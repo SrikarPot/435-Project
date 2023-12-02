@@ -30,14 +30,11 @@ float cudaMemcpy_host_to_device_time;
 float cudaMemcpy_device_to_host_time;
 
 __device__ void merge(float* values, float* temp, int l, int m, int r)  {
-  // if(values[m] <= values[m+1]) return; // subarrays already sorted
-
-
   int i = l;
-  int j = m+1;
+  int j = m;
   int k = l;
 
-  while(i <= m && j <= r) {
+  while(i < m && j < r) {
     if(values[i] > values[j])
       temp[k++] = values[j++];
     else
@@ -45,45 +42,35 @@ __device__ void merge(float* values, float* temp, int l, int m, int r)  {
   }
 
   // add left over values from first half
-  while(i <= m) {
+  while(i < m) {
     temp[k++] = values[i++];
   }
 
   //add left over values from second half
-  while(j <= r) {
+  while(j < r) {
     temp[k++] = values[j++];
   }
 
-
   // copy over to main array
-  for(i = l; i <= r; i++) {
+  for(i = l; i < r; i++) {
     values[i] = temp[i];
   }
-  
+
 }
 
-__device__ void mergeSortHelper(float* values, float* temp, long l, long r) {
-    if (l < r) {
 
-        long m = l + (r - l) / 2L;
-        mergeSortHelper(values, temp, l, m);
-        mergeSortHelper(values, temp, m + 1L, r);
-        merge(values, temp, (int)l, (int)m, (int)r);
-    }
-}
-__global__ void merge_sort(float* values, float* temp, int num_vals, int window, bool first) {
-    long id = (long)threadIdx.x + (long)blockDim.x * (long)blockIdx.x;
+__global__ void merge_sort(float* values, float* temp, int num_vals, int window) {
+    int id = threadIdx.x + blockDim.x * blockIdx.x;
     long l = (long)id*(long)window;
     long r = l+(long)window;
     if(r > num_vals) { // final window might be smaller
       r = num_vals;
     }
-    // long m = l + (r-l)/2L;  
+
+    long m = l + (r-l)/2;  
+    printf("%d %d %d\n",l,m,r);
     if(l < (long)num_vals) { // check if thread is neccesary
-      if(first)
-        mergeSortHelper(values, temp, l, r);
-      else
-        merge(values, temp, (int)l,(int)(l + (r-l)/2L), (int)r);
+      merge(values, temp, (int)l, (int)m, (int)r);
     }
 } 
 
@@ -110,10 +97,9 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window,
   dim3 threads(THREADS,1);  /* Number of threads  */
   CALI_MARK_BEGIN("comp");
   CALI_MARK_BEGIN("comp_large");
-  for(int window = NUM_VALS/THREADS; window <= NUM_VALS; window <<=1) {
-    printf("%d\n", window);
-    merge_sort<<<blocks, threads>>>(dev_values, temp, NUM_VALS, window, window == NUM_VALS/THREADS);
-    cudaDeviceSynchronize();
+  for(int window = 2; window <= NUM_VALS; window <<=1) {
+    printf("%d \n", window);
+    merge_sort<<<blocks, threads>>>(dev_values, temp, NUM_VALS, window);
   }
   CALI_MARK_END("comp_large");
   CALI_MARK_END("comp");
@@ -128,6 +114,8 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window,
   CALI_MARK_END("comm");
   cudaFree(dev_values);
   cudaFree(temp);
+
+  
 }
 
 int main(int argc, char *argv[])
