@@ -1,4 +1,0 @@
-algo: merge, processes: 4, num_vals: 16, input_type: Random
-srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
-slurmstepd: error: *** STEP 9249720.0 ON c262 CANCELLED AT 2023-11-14T18:14:17 DUE TO TIME LIMIT ***
-slurmstepd: error: *** JOB 9249720 ON c262 CANCELLED AT 2023-11-14T18:14:17 DUE TO TIME LIMIT ***

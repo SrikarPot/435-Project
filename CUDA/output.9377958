@@ -1,0 +1,29 @@
+
+Inactive Modules:
+  1) UCX/1.9.0     2) numactl/2.0.13
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) binutils/2.35     2) zlib/1.2.11
+
+The following have been reloaded with a version change:
+  1) GCCcore/10.2.0 => GCCcore/7.3.0
+
+algo: merge, num_threads: 1024, num_vals: 262144, input_type: Random
+Number of values: 262144
+Number of values: 262144
+Number of blocks: 256
+256
+512
+1024
+2048
+4096
+8192
+16384
+32768
+65536
+131072
+262144
+Elapsed time: 0.490s
+1 234.497437 87.039398
+234.497 87.039 1462.312 2145.182 1747.853 2125.281 1206.186 1577.670 2070.148 1368.234 319.465 1920.803 1122.935 785.503 1996.584 1012.717 1573.005 1654.364 1414.577 2135.016 
+Not sorted correctly

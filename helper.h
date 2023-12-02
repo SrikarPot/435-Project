@@ -4,6 +4,8 @@
 // Include necessary libraries if needed
 #include <iostream>
 #include <string>
+#include <cuda_runtime.h>
+#include <cuda.h>
 
 void print_elapsed(clock_t start, clock_t stop)
 {
@@ -14,6 +16,15 @@ void print_elapsed(clock_t start, clock_t stop)
 float random_float()
 {
   return (float)rand()/(float)1000000;
+}
+
+__device__ void array_print_device(float *arr, int length) 
+{
+  int i;
+  for (i = 0; i < length; ++i) {
+    printf("%1.3f ",  arr[i]);
+  }
+  printf("\n");
 }
 
 void array_print(float *arr, int length) 

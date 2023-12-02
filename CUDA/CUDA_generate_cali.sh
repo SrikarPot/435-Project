@@ -1,9 +1,9 @@
 #!/bin/bash
 
-algorithms=("merge" "enumeration" "bitonic" "oddeven")
-num_processes=(64 128 256 512 1024 2048 4096)
+algorithms=("merge")
+num_processes=(64 128 256 512 1024)
 num_vals=(65536 262144 1048576 4194304 16777216 67108864 268435456)
-input_types=("Sorted" "Random" "ReverseSorted" "1%perturbed")
+input_types=("Random" "ReverseSorted" "Sorted")
 
 # Iterate over all combinations
 for algorithm in "${algorithms[@]}"
