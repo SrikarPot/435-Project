@@ -133,6 +133,61 @@ int main()
 
 ```
 
+### Psuedo code for Bitonic Sort(MPI)
+```
+1. Initialize MPI
+2. Get the total number of processes (size) and the rank of the current process (rank)
+
+function bitonicSort(arr, direction, myRank, numProcesses):
+    localSize = length(arr) / numProcesses
+    localArr = scatter(arr, localSize)  // Distribute the data among processes
+
+    for step in 1 to log2(numProcesses):  // Logarithmic phases
+        for subStep in step-1 to 0 step -1:  // Each phase has sub-steps
+            mask = 2^(subStep + 1) - 1
+            partner = myRank xor mask
+            localArr = compareAndSwap(localArr, partner, direction)
+
+    gather(arr, localArr, localSize)  // Gather the sorted data back to the root process
+
+end function
+
+function compareAndSwap(localArr, partner, direction):
+    // Communication between two processes
+    sendArray = localArr
+    recvArray = receive(partner)
+
+    if (myRank < partner) XOR (direction == ASCENDING):
+        if localArr > recvArray:
+            localArr = recvArray
+    else:
+        if localArr < recvArray:
+            localArr = recvArray
+
+    send(localArr, partner)
+
+    return localArr
+
+end function
+
+
+// Main program
+if rank == 0:
+    arr = generate_random_array()
+else:
+    arr = empty_array()
+
+direction = ASCENDING  // or DESCENDING
+bitonicSort(arr, direction, rank, size)
+
+if rank == 0:
+    print("Sorted Array:", arr)
+
+Finalize MPI
+
+
+```
+
 
 Required code regions:
 - `main` - top-level main function.
