@@ -51,6 +51,88 @@ main
 |    |_ comp_large  // When you perform the computation on all of the data the process has, such as sorting all local elements
 |_ correctness_check
 ```
+### Psuedo code for Odd-Even Transposition Sort(CUDA)
+```
+// Define the array size
+let N = size of the array
+
+// CUDA kernel function for odd-even transposition sort
+__global__ void oddEvenSortKernel(float *d_a, int n, int phase)
+{
+  // Calculate global thread index
+  int index = threadIdx.x + blockDim.x * blockIdx.x;
+  int idx1 = index;
+  int idx2 = index + 1;
+
+  // Check whether we are in an odd or even phase
+  if ((phase % 2 == 0) && (idx2 < n) && (idx1 % 2 == 0))
+  { // Even phase
+    if (d_a[idx1] > d_a[idx2])
+    {
+      // Swap elements
+      float temp = d_a[idx1];
+      d_a[idx1] = d_a[idx2];
+      d_a[idx2] = temp;
+    }
+  }
+  else if ((phase % 2 == 1) && (idx2 < n) && (idx1 % 2 == 1))
+  { // Odd phase
+    if (d_a[idx1] > d_a[idx2])
+    {
+      // Swap elements
+      float temp = d_a[idx1];
+      d_a[idx1] = d_a[idx2];
+      d_a[idx2] = temp;
+    }
+  }
+}
+
+// Host function to run the parallelized odd-even transposition sort
+void cudaOddEvenSort(float *h_a, int n)
+{
+  float *d_a;
+
+  // Allocate memory on the device
+  cudaMalloc(&d_a, n * sizeof(float));
+
+  // Copy data from host to device
+  cudaMemcpy(d_a, h_a, n * sizeof(float), cudaMemcpyHostToDevice);
+
+  // Setup block and grid dimensions
+  dim3 blocks(BLOCKS, 1);   // Number of blocks
+  dim3 threads(THREADS, 1); // Number of threads per block
+
+  // Launch the kernel for each phase
+  for (int i = 0; i < n; ++i)
+  {
+    oddEvenSortKernel<<<blocks, threads>>>(d_a, n, i);
+    cudaDeviceSynchronize();
+  }
+
+  // Copy the sorted array back to the host
+  cudaMemcpy(h_a, d_a, n * sizeof(float), cudaMemcpyDeviceToHost);
+
+  // Free device memory
+  cudaFree(d_a);
+}
+
+// Main program
+int main()
+{
+  // Initialize array and other variables
+  float *array = initializeArray(N);
+  
+  // Perform sorting on the GPU
+  cudaOddEvenSort(array, N);
+
+  // Print the sorted array or perform further operations
+
+  // Cleanup and exit
+  return 0;
+}
+
+```
+
 
 Required code regions:
 - `main` - top-level main function.
