@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
     adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
     adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
     adiak::value("InputSize", n); // The number of elements in input dataset (1000)
-    adiak::value("InputType", (char*)input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    adiak::value("InputType", input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
     adiak::value("num_procs", size); // The number of processors (MPI ranks)
     // adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
     // adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 

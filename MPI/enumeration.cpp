@@ -71,11 +71,7 @@ MPI_Status status;
 MPI_Init(&argc,&argv);
 MPI_Comm_rank(MPI_COMM_WORLD,&taskid);
 MPI_Comm_size(MPI_COMM_WORLD,&numtasks);
-if (numtasks < 2 ) {
-  printf("Need at least two MPI tasks. Quitting...\n");
-  MPI_Abort(MPI_COMM_WORLD, rc);
-  exit(1);
-  }
+
 numworkers_inc_master = numtasks;
 
 int calculations_per_worker = NUM_VALS / numworkers_inc_master;
@@ -266,7 +262,7 @@ float sorted_array[NUM_VALS];
     adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
     adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
     adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
-    adiak::value("InputType", (char*)input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    adiak::value("InputType", input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
     adiak::value("num_procs", numtasks); // The number of processors (MPI ranks)
     // adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
     // adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
