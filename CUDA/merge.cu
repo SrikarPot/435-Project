@@ -68,7 +68,6 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
     }
 
     long m = l + (r-l)/2;  
-    printf("%d %d %d\n",l,m,r);
     if(l < (long)num_vals) { // check if thread is neccesary
       merge(values, temp, (int)l, (int)m, (int)r);
     }
@@ -98,7 +97,6 @@ __global__ void merge_sort(float* values, float* temp, int num_vals, int window)
   CALI_MARK_BEGIN("comp");
   CALI_MARK_BEGIN("comp_large");
   for(int window = 2; window <= NUM_VALS; window <<=1) {
-    printf("%d \n", window);
     merge_sort<<<blocks, threads>>>(dev_values, temp, NUM_VALS, window);
   }
   CALI_MARK_END("comp_large");
@@ -161,7 +159,7 @@ int main(int argc, char *argv[])
     adiak::value("Datatype", "float"); // The datatype of input elements (e.g., double, int, float)
     adiak::value("SizeOfDatatype", 4); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
     adiak::value("InputSize", NUM_VALS); // The number of elements in input dataset (1000)
-    adiak::value("InputType", (char*)input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    adiak::value("InputType", input_type.c_str()); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
     // adiak::value("num_procs", ); // The number of processors (MPI ranks)
     adiak::value("num_threads", THREADS); // The number of CUDA or OpenMP threads
     adiak::value("num_blocks", BLOCKS); // The number of CUDA blocks 
